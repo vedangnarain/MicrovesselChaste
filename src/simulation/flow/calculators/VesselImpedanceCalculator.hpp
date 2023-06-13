@@ -75,6 +75,15 @@ public:
      */
     void Calculate();
 
+    void CalculateGetLengthFromMatrix();
+
+    void CalculateFromMatrix(std::vector<std::vector<double>> rLengthsMatrix);
+
+
+    void CalculateFromMatrixWithPruning(std::vector<std::vector<double>> rLengthsMatrix, std::vector<std::vector<double>> rDiametersMatrix, double DimlessRadiusThreshold);
+
+    void CalculateFromMatrixWithPruningByLength(std::vector<std::vector<double>> rLengthsMatrix, double DimlessLengthThreshold);
+
 };
 
 #endif /* VESSELIMPEDANCECALCULATOR_HPP_ */

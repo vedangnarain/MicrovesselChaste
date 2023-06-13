@@ -46,6 +46,7 @@ LinnengarHaematocritSolver<DIM>::LinnengarHaematocritSolver() : AbstractHaematoc
     mTHR(2.5),
     mAlpha(0.5),
     mHaematocrit(0.45),
+    mLinnM(1.0),
     mSolveHighConnectivityNetworks(false),
     mTurnOffFungModel(false),
     mUseRandomSplitting(false),
@@ -109,6 +110,13 @@ void LinnengarHaematocritSolver<DIM>::SetHaematocrit(QDimensionless haematocrit)
 }
 
 template<unsigned DIM>
+void LinnengarHaematocritSolver<DIM>::SetLinnM(QDimensionless LinnM)
+{
+    mLinnM = LinnM;
+}
+
+
+template<unsigned DIM>
 void LinnengarHaematocritSolver<DIM>::Calculate()
 {
     // Give the vessels unique Ids
@@ -135,16 +143,15 @@ void LinnengarHaematocritSolver<DIM>::Calculate()
         max_vessels_per_branch  = unsigned(lhsVectorSize);
     }
     LinearSystem linearSystem(lhsVectorSize, max_vessels_per_branch);
-    if(lhsVectorSize > 6)
-    {
-        linearSystem.SetPcType("lu");
-        #ifdef PETSC_HAVE_HYPRE
-        linearSystem.SetPcType("hypre");
-        #endif //PETSC_HAVE_HYPRE
-        linearSystem.SetKspType("preonly");
-    }
+    //if(lhsVectorSize > 6)
+    //{
+    //   linearSystem.SetPcType("lu");
+    //    #ifdef PETSC_HAVE_HYPRE
+    //    linearSystem.SetPcType("hypre");
+    //    #endif //PETSC_HAVE_HYPRE
+    //    linearSystem.SetKspType("preonly");
+   //}
 
-    std::vector<std::vector<int> > update_indices;
     for(unsigned idx=0; idx<vessels.size(); idx++)
     {
         // Always have a diagonal entry for system, this sets zero haematocrit by default
@@ -229,8 +236,8 @@ void LinnengarHaematocritSolver<DIM>::Calculate()
                         // Haematocrit fraction is given by the fractional flow rate. Get the fraction of
                         // the total outflow going into this channel.
                         // Save the indices for later updating
-                        std::vector<int> local_update_indics;
-                        local_update_indics.push_back(int(idx));
+std::cout << "Blaaaa";
+                        
 
                         if(mUseRandomSplitting)
                         {
@@ -238,7 +245,6 @@ void LinnengarHaematocritSolver<DIM>::Calculate()
                             bool my_value_highest = true;
                             for(unsigned comp_index=0; comp_index<competitor_vessels.size(); comp_index++)
                             {
-                                local_update_indics.push_back(-1*competitor_vessels[comp_index]->GetId());
                                 if(random_assignment[competitor_vessels[comp_index]->GetId()]>my_value)
                                 {
                                     my_value_highest = false;
@@ -252,26 +258,24 @@ void LinnengarHaematocritSolver<DIM>::Calculate()
                             }
                             for(unsigned parent_index=0; parent_index<parent_vessels.size(); parent_index++)
                             {
-                                local_update_indics.push_back(parent_vessels[parent_index]->GetId());
+
                                 linearSystem.SetMatrixElement(idx, parent_vessels[parent_index]->GetId(), -fraction);
                             }
-                            update_indices.push_back(local_update_indics);
                         }
                         else
                         {
                             QFlowRate outflow_rate = 0.0*unit::metre_cubed_per_second;
                             for(unsigned comp_index=0; comp_index<competitor_vessels.size(); comp_index++)
                             {
-                                local_update_indics.push_back(-1*competitor_vessels[comp_index]->GetId());
+
                                 outflow_rate = outflow_rate + Qabs(competitor_vessels[comp_index]->GetFlowProperties()->GetFlowRate());
                             }
                             double fraction = Qabs(flow_rate)/(Qabs(flow_rate)+outflow_rate);
                             for(unsigned parent_index=0; parent_index<parent_vessels.size(); parent_index++)
                             {
-                                local_update_indics.push_back(parent_vessels[parent_index]->GetId());
+
                                 linearSystem.SetMatrixElement(idx, parent_vessels[parent_index]->GetId(), -fraction);
                             }
-                            update_indices.push_back(local_update_indics);
                         }
                     }
                     else
@@ -281,180 +285,36 @@ void LinnengarHaematocritSolver<DIM>::Calculate()
 
                         // There is a bifurcation, apply a haematocrit splitting rule
                         QLength my_radius = vessels[idx]->GetRadius();
-                        QLength competitor_radius = competitor_vessels[0]->GetRadius();
-                        QVelocity my_velocity = Qabs(flow_rate)/(M_PI * my_radius * my_radius);
-                        QVelocity competitor_velocity = Qabs(competitor0_flow_rate)/(M_PI * competitor_radius * competitor_radius);
+                        QLength competitor_radius = competitor_vessels[0]->GetRadius();                      
 
-                        QDimensionless alpha = 1.0 - parent_vessels[0]->GetFlowProperties()->GetHaematocrit();
-                        QDimensionless flow_ratio_pm = Qabs(parent0_flow_rate)/Qabs(flow_rate);
-                        QDimensionless flow_ratio_cm = Qabs(competitor0_flow_rate)/Qabs(flow_rate);
-                        double numer = flow_ratio_pm;
-
-                        // Apply fungs rule to faster vessel
-                        if(my_velocity >= competitor_velocity)
-                        {
-                            QDimensionless term = alpha * (my_velocity/competitor_velocity-1.0);
-                            double denom = 1.0+flow_ratio_cm*(1.0/(1.0+term));
-                            linearSystem.SetMatrixElement(idx, parent_vessels[0]->GetId(), -numer/denom);
-                        }
-                        else
-                        {
-                            QDimensionless term = alpha * (competitor_velocity/my_velocity-1.0);
-                            double denom = 1.0+flow_ratio_cm*(1.0+term);
-                            linearSystem.SetMatrixElement(idx, parent_vessels[0]->GetId(), -numer/denom);
-                        }
-
-                        // Save the indices for later updating
-                        std::vector<int> local_update_indics = std::vector<int>(3);
-                        local_update_indics[0] = idx;
-                        local_update_indics[1] = parent_vessels[0]->GetId();
-                        local_update_indics[2] = competitor_vessels[0]->GetId();
-                        update_indices.push_back(local_update_indics);
+                        // Apply Linninger's rule to faster vessel
+                        QDimensionless term =  pow(competitor_radius/my_radius,2.0/mLinnM);
+std::cout << -Qabs(parent0_flow_rate)/(Qabs(flow_rate)+Qabs(competitor0_flow_rate)*term) << "\n";
+                        linearSystem.SetMatrixElement(idx, parent_vessels[0]->GetId(), -Qabs(parent0_flow_rate)/(Qabs(flow_rate)+Qabs(competitor0_flow_rate)*term));
+                        
+             
                     }
                 }
             }
         }
     }
 
-    // Set the parameters for iteration
-    double tolerance = 1e-3;
-    double max_iterations = 1000;
-    double residual = DBL_MAX;
-    int iterations = 0;
+Vec solution = PetscTools::CreateVec(vessels.size());
+linearSystem.AssembleFinalLinearSystem();
+solution = linearSystem.Solve();
+ReplicatableVector a(solution);
 
-    while(residual > tolerance && iterations < max_iterations)
-    {
-        if(iterations>0 and update_indices.size()>0)
+// assign haematocrit levels to vessels
+for (unsigned idx = 0; idx < vessels.size(); idx++)
+   {
+        for (unsigned jdx = 0; jdx < vessels[idx]->GetNumberOfSegments(); jdx++)
         {
-            // Update the system
-            linearSystem.SwitchWriteModeLhsMatrix();
-            for(unsigned idx=0; idx<update_indices.size();idx++)
-            {
-                if(update_indices[idx].size()>3 or mTurnOffFungModel or mUseRandomSplitting)
-                {
-                    if(mUseRandomSplitting)
-                     {
-                         double my_value = random_assignment[update_indices[idx][0]];
-                         bool my_value_highest = true;
-                         unsigned counter = 0;
-                         for(unsigned local_update_index=1; local_update_index<update_indices[idx].size(); local_update_index++)
-                         {
-                             if(update_indices[idx][local_update_index]<0)
-                             {
-                                 if(random_assignment[update_indices[idx][local_update_index]]>my_value)
-                                 {
-                                     my_value_highest = false;
-                                 }
-                                 counter++;
-                             }
-                         }
-                         double fraction = 0.3/double(counter);
-                         if(my_value_highest)
-                         {
-                             fraction = 0.7;
-                         }
-                         for(unsigned local_update_index=1;local_update_index<update_indices[idx].size();local_update_index++)
-                         {
-                             if(update_indices[idx][local_update_index]>=0)
-                             {
-                                 linearSystem.SetMatrixElement(update_indices[idx][0], update_indices[idx][local_update_index], -fraction);
-                             }
-                         }
-                     }
-                    else
-                    {
-                        QFlowRate self_flow_rate = vessels[update_indices[idx][0]]->GetFlowProperties()->GetFlowRate();
-                        QFlowRate outflow_rate = 0.0*unit::metre_cubed_per_second;
-                        for(unsigned local_update_index=1;local_update_index<update_indices[idx].size();local_update_index++)
-                        {
-                            if(update_indices[idx][local_update_index]<0)
-                            {
-                                outflow_rate = outflow_rate + Qabs(vessels[abs(update_indices[idx][local_update_index])]->GetFlowProperties()->GetFlowRate());
-                            }
-                        }
-                        double fraction = Qabs(self_flow_rate)/(Qabs(self_flow_rate)+outflow_rate);
-                        for(unsigned local_update_index=1;local_update_index<update_indices[idx].size();local_update_index++)
-                        {
-                            if(update_indices[idx][local_update_index]>=0)
-                            {
-                                linearSystem.SetMatrixElement(update_indices[idx][0], update_indices[idx][local_update_index], -fraction);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    QFlowRate self_flow_rate = vessels[update_indices[idx][0]]->GetFlowProperties()->GetFlowRate();
-                    QFlowRate competitor0_flow_rate = vessels[update_indices[idx][2]]->GetFlowProperties()->GetFlowRate();
-                    QFlowRate parent0_flow_rate = vessels[update_indices[idx][1]]->GetFlowProperties()->GetFlowRate();
-
-                    QLength my_radius = vessels[update_indices[idx][0]]->GetRadius();
-                    QLength competitor_radius = vessels[update_indices[idx][2]]->GetRadius();
-                    QVelocity my_velocity = Qabs(self_flow_rate)/(M_PI * my_radius * my_radius);
-                    QVelocity competitor_velocity = Qabs(competitor0_flow_rate)/(M_PI * competitor_radius * competitor_radius);
-                    QDimensionless alpha = 1.0 - vessels[update_indices[idx][1]]->GetFlowProperties()->GetHaematocrit();
-
-                    double flow_ratio_pm = Qabs(parent0_flow_rate/self_flow_rate);
-                    double flow_ratio_cm = Qabs(competitor0_flow_rate/self_flow_rate);
-                    double numer = flow_ratio_pm;
-
-                    // Apply fungs rule to faster vessel
-                    if(my_velocity >= competitor_velocity)
-                    {
-                        double term = alpha * (my_velocity/competitor_velocity-1.0);
-                        double denom = 1.0+flow_ratio_cm*(1.0/(1.0+term));
-                        linearSystem.SetMatrixElement(update_indices[idx][0], update_indices[idx][1], -numer/denom);
-                    }
-                    else
-                    {
-                        double term = alpha * (competitor_velocity/my_velocity-1.0);
-                        double denom = 1.0+flow_ratio_cm*(1.0+term);
-                        linearSystem.SetMatrixElement(update_indices[idx][0], update_indices[idx][1], -numer/denom);
-                    }
-                }
-            }
-        }
-
-        Vec solution = PetscTools::CreateVec(vessels.size());
-        linearSystem.AssembleFinalLinearSystem();
-        solution = linearSystem.Solve();
-        ReplicatableVector a(solution);
-
-        // Get the residual
-        residual = 0.0;
-        for (unsigned i = 0; i < vessels.size(); i++)
-        {
-            if(std::abs(vessels[i]->GetFlowProperties()->GetHaematocrit() - a[i]) > residual)
-            {
-                residual = std::abs(vessels[i]->GetFlowProperties()->GetHaematocrit() - a[i]);
-            }
-        }
-
-        // assign haematocrit levels to vessels
-        for (unsigned idx = 0; idx < vessels.size(); idx++)
-        {
-            for (unsigned jdx = 0; jdx < vessels[idx]->GetNumberOfSegments(); jdx++)
-            {
                 vessels[idx]->GetSegments()[jdx]->GetFlowProperties()->SetHaematocrit(a[idx]);
-            }
         }
+   }
 
-        iterations++;
-        if(iterations == max_iterations)
-        {
-            if(mExceptionOnFailedConverge)
-            {
-                EXCEPTION("Haematocrit calculation failed to converge.");
-            }
-            else
-            {
-                std::cout << "Warning: haematocrit calculation failed to converge" << std::endl;
-            }
+PetscTools::Destroy(solution);
 
-        }
-
-        PetscTools::Destroy(solution);
-    }
 }
 // Explicit instantiation
 template class LinnengarHaematocritSolver<2>;

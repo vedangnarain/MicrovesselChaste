@@ -52,6 +52,8 @@ template<unsigned DIM>
 VesselNetworkReader<DIM>::VesselNetworkReader()
     : mFileName(),
       mRadiusLabel("Node Radius"),
+      mDiameterLabel("diameter"),
+      mHaematocritLabel("haematocrit"),
       mRadiusConversionFactor(1.0),
       mMergeCoincidentPoints(false),
       mTargetSegmentLength(0.0_m),
@@ -189,6 +191,137 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkReader<DIM>::Read()
         }
         // Add the resulting vessel to the network
         p_network->AddVessel(Vessel<DIM>::Create(segments));
+    }
+    return p_network;
+}
+
+
+
+
+template<unsigned DIM>
+std::shared_ptr<VesselNetwork<DIM> > VesselNetworkReader<DIM>::ReadWithHaematocrits()
+{
+    if(mFileName.empty())
+    {
+        EXCEPTION("File name not set in vessel network reader");
+    }
+
+    // Create an empty vessel network
+    std::shared_ptr<VesselNetwork<DIM> > p_network = VesselNetwork<DIM>::Create();
+
+    // Create a VTK PolyData object based on the contents of the input VTK file
+    vtkSmartPointer<vtkXMLPolyDataReader> p_reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+    p_reader->SetFileName(mFileName.c_str());
+    p_reader->Update();
+
+    vtkSmartPointer<vtkPolyData> p_polydata = p_reader->GetOutput();
+
+    if (mMergeCoincidentPoints) {
+        vtkSmartPointer<vtkCleanPolyData> p_cleaner = vtkSmartPointer<
+                vtkCleanPolyData>::New();
+#if VTK_MAJOR_VERSION <= 5
+        p_cleaner->SetInput(p_polydata);
+#else
+        p_cleaner->SetInputData(p_polydata);
+#endif
+        p_cleaner->Update();
+        p_polydata = p_cleaner->GetOutput();
+    }
+
+    if (mTargetSegmentLength != 0_m) {
+        vtkSmartPointer<vtkSplineFilter> p_spline_filter = vtkSmartPointer<
+                vtkSplineFilter>::New();
+#if VTK_MAJOR_VERSION <= 5
+        p_spline_filter->SetInput(p_polydata);
+#else
+        p_spline_filter->SetInputData(p_polydata);
+#endif
+        p_spline_filter->SetSubdivideToLength();
+        p_spline_filter->SetLength(mTargetSegmentLength / mReferenceLength);
+        p_spline_filter->Update();
+        p_polydata = p_spline_filter->GetOutput();
+    }
+
+    // Create the nodes
+    vtkSmartPointer<vtkCellData> p_cell_data = vtkSmartPointer<vtkCellData>::New();
+    std::vector<std::shared_ptr<VesselNode<DIM> > > nodes;
+    for (vtkIdType i = 0; i < p_polydata->GetNumberOfPoints(); i++)
+    {
+        double point_coords[3];
+        p_polydata->GetPoint(i, point_coords);
+        nodes.push_back(VesselNode<DIM>::Create(Vertex<DIM>(point_coords, mReferenceLength)));
+    }
+
+    // Extract radii, diameters and haematocrits corresponding to each node from the VTK Polydata and store them in a list.
+    p_cell_data = p_polydata->GetCellData();
+    std::vector<double> radii;
+    std::vector<double> diameters;
+    std::vector<double> haematocrits;
+
+	//std::cout << "Get number of array in cell data: " << p_cell_data->GetNumberOfArrays() << std::endl;   
+
+    for (vtkIdType i = 0; i < p_cell_data->GetNumberOfArrays(); i++)
+    {
+
+	//std::cout << "Get number of tuples in particular array in cell data: " << p_cell_data->GetArray(i)->GetNumberOfTuples() << std::endl;   
+		//std::cout << "Diameter values: " << std::endl;            
+        std::string array_name = p_cell_data->GetArrayName(i);
+        //if (array_name.compare(mRadiusLabel) == 0)
+        //{
+         //   for (vtkIdType j = 0; j < p_cell_data->GetArray(i)->GetNumberOfTuples(); j++)
+          //  {
+           //     radii.push_back(p_point_data->GetArray(i)->GetTuple1(j));
+           // }
+        //}
+        if (array_name.compare(mDiameterLabel) == 0)
+        {
+		//std::cout << "Diameter values: " << std::endl;            
+            for (vtkIdType j = 0; j < p_cell_data->GetArray(i)->GetNumberOfTuples(); j++)
+            {
+                diameters.push_back(p_cell_data->GetArray(i)->GetTuple1(j));
+		//std::cout << "Diameter value: " << p_cell_data->GetArray(i)->GetTuple1(j) << std::endl;            
+		}
+        }
+        if (array_name.compare(mHaematocritLabel) == 0)
+        {
+            for (vtkIdType j = 0; j < p_cell_data->GetArray(i)->GetNumberOfTuples(); j++)
+            {
+                haematocrits.push_back(p_cell_data->GetArray(i)->GetTuple1(j));
+		//std::cout << "Haematocrit value: " << p_cell_data->GetArray(i)->GetTuple1(j) << std::endl;   
+            }
+        }
+    }
+
+    // Extract vessels from the VTK Polydata. This is done by iterating over a VTK CellArray object which
+    // returns a 'pointList' vtkIdList object. This object contains the point IDs of the nodes which make up
+    // the vessel.
+    vtkSmartPointer<vtkCellArray> pCellArray = vtkSmartPointer<vtkCellArray>::New();
+    pCellArray = p_polydata->GetLines();
+	//std::cout << "Get number of lines: " << p_polydata->GetNumberOfLines() << std::endl;   
+    for (int i = 0; i < p_polydata->GetNumberOfLines(); i++)
+    {
+        // Make a new vessel
+        vtkIdType num_segments;
+        vtkIdType* pSegmentList;
+        pCellArray->GetNextCell(num_segments, pSegmentList);
+        std::vector<std::shared_ptr<VesselSegment<DIM> > > segments;
+        // Add segments to the vessels in order
+        for (int j = 1; j < num_segments; j++)
+        {
+            std::shared_ptr<VesselSegment<DIM> > p_segment = VesselSegment<DIM>::Create(nodes[pSegmentList[j - 1]],nodes[pSegmentList[j]]);
+            p_segment->SetRadius(0.5*diameters[i] * mReferenceLength);
+      	    p_segment->GetFlowProperties()->SetHaematocrit(haematocrits[i]);
+            segments.push_back(p_segment);
+        }
+        // Add the resulting vessel to the network
+        p_network->AddVessel(Vessel<DIM>::Create(segments));
+
+
+        //std::shared_ptr<Vessel<DIM> > p_vessel = Vessel<DIM>::Create(nodes[pSegmentList[0]],nodes[pSegmentList[1]]);
+        //p_vessel->SetRadius(0.5*diameters[pSegmentList[1]] * mReferenceLength);
+        //p_vessel->GetFlowProperties()->SetHaematocrit(haematocrits[pSegmentList[1]]);
+        // Add the resulting vessel to the network
+        //p_network->AddVessel(p_vessel);
     }
     return p_network;
 }

@@ -93,6 +93,16 @@ class VesselNetworkReader
     std::string mRadiusLabel;
 
     /**
+     * The name of the array containing diameter info
+     */
+    std::string mDiameterLabel;
+
+    /**
+     * The name of the array containing haematocrit info
+     */
+    std::string mHaematocritLabel;
+
+    /**
      * Radius conversion factor. Multiply radii by this factor, useful if the contents of the
      * 'Radius' array in the vtk file is not in the form we want
      */
@@ -139,6 +149,13 @@ public:
      * @return the vessel network
      */
     std::shared_ptr<VesselNetwork<DIM> > Read();
+
+    /**
+     * Do the read and return the vessel network from Romain's vtk files; with haematocrits and diameters
+     *
+     * @return the vessel network
+     */
+    std::shared_ptr<VesselNetwork<DIM> > ReadWithHaematocrits();
 
     /**
      * Set the name of the radius array

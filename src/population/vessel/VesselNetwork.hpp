@@ -320,6 +320,10 @@ public:
 
     std::shared_ptr<VesselSegment<DIM> > GetVesselSegment(unsigned index);
 
+
+    double GetPerfusionQuotientBeta(QFlowRate threshold);
+
+
     /**
      * Return the indexed vessel
      * @param index the query index
@@ -387,6 +391,40 @@ public:
      * @param endsOnly just remove vessels with connectivity 1
      */
     void RemoveShortVessels(QLength cutoff = 10.0* 1_um, bool endsOnly = true);
+
+    /**
+     * Remove short vessels from the network with vessel length determined from a matrix
+     * @param cutoff the minumum vessel length
+     * @param endsOnly just remove vessels with connectivity 1
+     */
+    void RemoveShortVesselsLengthFromMatrix(QLength cutoff = 10.0* 1_um, bool endsOnly = true);
+
+    /**
+     * Remove thin vessels from the network
+     * @param pVessel the vessel to remove
+     * @param endsOnly just remove vessels with connectivity 1
+     */
+    void RemoveThinVessels(QLength cutoffRadius = 10.0* 1_um, bool endsOnly = true);
+
+    /**
+     * Remove non-inlet/outlet vessels from the network based on arbitrary probability curve (thinner vessels are more likely to be pruned)
+     * @param beta the strength of the dosage
+     * @param endsOnly just remove vessels with connectivity 1
+     */
+    void StochasticPruning(int beta = 5, bool endsOnly = true);
+
+    /**
+     * Remove all but one inlet and one outlet
+     * @param endsOnly just remove vessels with connectivity 1
+     */
+    void TransformHexagonalNetwork(bool endsOnly = true);
+
+    // 26/2/21: I was trying to work on a Universal Pruning Rule here. Feel free to delete if I came up with one somewhere else. (-- Vedang Narain) 
+    // /**
+    //  * Remove a vessel from the network as well as the other vessels dependent on it
+    //  * @param cutoff the minumum vessel radius
+    //  */
+    // void UniversalPruning(std::shared_ptr<Vessel<DIM> > pVessel);
 
     /**
      * Translate the network along the provided vector

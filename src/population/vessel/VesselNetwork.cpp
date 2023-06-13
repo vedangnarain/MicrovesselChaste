@@ -326,7 +326,123 @@ void VesselNetwork<DIM>::RemoveShortVessels(QLength cutoff, bool endsOnly)
 
     for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
     {
-        RemoveVessel(vessels_to_remove[idx]);
+        RemoveVessel(vessels_to_remove[idx],true);
+    }
+}
+
+template <unsigned DIM>
+void VesselNetwork<DIM>::RemoveShortVesselsLengthFromMatrix(QLength cutoff, bool endsOnly)
+{
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels_to_remove;
+
+    for(unsigned idx=0; idx<mVessels.size(); idx++)
+    {
+        if(mVessels[idx]->GetLengthFromMatrix() < cutoff)
+        {
+		std::cout<< idx << "\n";
+            if(endsOnly && (mVessels[idx]->GetStartNode()->GetNumberOfSegments() == 1 || mVessels[idx]->GetEndNode()->GetNumberOfSegments() == 1 ))
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+            else if(!endsOnly)
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+        }
+    }
+
+    for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
+    {
+        RemoveVessel(vessels_to_remove[idx],true);
+    }
+}
+
+template <unsigned DIM>
+void VesselNetwork<DIM>::RemoveThinVessels(QLength cutoffRadius, bool endsOnly)
+{
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels_to_remove;
+
+    for(unsigned idx=0; idx<mVessels.size(); idx++)
+    {
+        if(mVessels[idx]->GetRadius() < cutoffRadius)
+        {
+            if(endsOnly && (mVessels[idx]->GetStartNode()->GetNumberOfSegments() == 1 || mVessels[idx]->GetEndNode()->GetNumberOfSegments() == 1 ))
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+            else if(!endsOnly)
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+        }
+    }
+
+    for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
+    {
+        RemoveVessel(vessels_to_remove[idx],true);
+    }
+}
+
+template <unsigned DIM>
+void VesselNetwork<DIM>::StochasticPruning(int beta, bool endsOnly)
+{
+    
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels_to_remove;
+
+    for(unsigned idx=0; idx<mVessels.size(); idx++)
+    {        
+        // srand((unsigned) time(NULL));  // seed random number
+        float random_number = (float) rand() / RAND_MAX;    
+        float vessel_radius = mVessels[idx]->GetRadius();
+        float prob_death = exp(-((vessel_radius-0.000003)*1000000)/beta);  
+        // std::cout << "vessel radius " << ((vessel_radius)*1000000) << " prob_death " << prob_death << " random number " << random_number << std::endl;
+
+        if(random_number <= prob_death)
+        {
+            // std::cout << "KILLED!" << std::endl;
+            if(endsOnly && (mVessels[idx]->GetStartNode()->GetNumberOfSegments() == 1 || mVessels[idx]->GetEndNode()->GetNumberOfSegments() == 1 ))
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+            else if(!endsOnly && (mVessels[idx]->GetStartNode()->GetNumberOfSegments() != 1 && mVessels[idx]->GetEndNode()->GetNumberOfSegments() != 1 ))
+            {
+                vessels_to_remove.push_back(mVessels[idx]);
+            }
+        }
+    }
+
+    for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
+    {
+        RemoveVessel(vessels_to_remove[idx],true);
+    }
+}
+
+template <unsigned DIM>
+void VesselNetwork<DIM>::TransformHexagonalNetwork(bool endsOnly)
+{
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels_to_remove;
+
+    for(unsigned idx=0; idx<mVessels.size(); idx++)
+    {        
+        // Remove extra inlets
+        if (idx<11 && idx>0) 
+        {
+            vessels_to_remove.push_back(mVessels[idx]);
+        }
+        // Remove extra outlets
+        if (idx==30)
+        {
+            vessels_to_remove.push_back(mVessels[idx]);
+        } 
+        // Remove extra outlets
+        if (idx>396 && idx<406)
+        {
+            vessels_to_remove.push_back(mVessels[idx]);
+        } 
+    }
+    for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
+    {
+        RemoveVessel(vessels_to_remove[idx],true);
     }
 }
 
@@ -352,6 +468,27 @@ void VesselNetwork<DIM>::MergeShortVessels(QLength cutoff)
     Modified();
     MergeCoincidentNodes();
 }
+
+// 26/2/21: I was trying to work on a Universal Pruning Rule here. Feel free to delete if I came up with one somewhere else. (-- Vedang Narain) 
+// Universal Pruning (removes vessel and all exclusive vessels)
+// template <unsigned DIM>
+// void VesselNetwork<DIM>::UniversalPruning(std::shared_ptr<Vessel<DIM> > pVessel)
+// {
+//     // initialise list of vessels to be pruned
+//     std::vector<std::shared_ptr<Vessel<DIM> > > vessels_to_remove;  // initialise list of vessels to be pruned
+    
+//     // find vessel's idx in mVessels/ sets iterator to position of selected vessel
+//     typename std::vector<std::shared_ptr<Vessel<DIM> > >::iterator it = std::find(mVessels.begin(), mVessels.end(), pVessel);
+
+//     // add selected vessel to the list for pruning
+//     vessels_to_remove.push_back(*it);
+
+//     // remove all vessels in list of condemned
+//     for(unsigned idx=0; idx<vessels_to_remove.size(); idx++)
+//     {
+//         RemoveVessel(vessels_to_remove[idx],true);
+//     }
+// }
 
 template <unsigned DIM>
 void VesselNetwork<DIM>::Modified(bool nodesOutOfDate, bool segmentsOutOfDate, bool vesselsOutOfDate)
@@ -548,6 +685,60 @@ std::shared_ptr<VesselSegment<DIM> > VesselNetwork<DIM>::GetVesselSegment(unsign
     }
     return mSegments[index];
 }
+
+
+template <unsigned DIM>
+double VesselNetwork<DIM>::GetPerfusionQuotientBeta(QFlowRate threshold)
+{
+    unsigned perfused=0;
+    unsigned unperfused =0;
+    unsigned dead =0;
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels = GetVessels();
+    typename std::vector<std::shared_ptr<Vessel<DIM> > >::iterator it;
+    for(it = vessels.begin(); it != vessels.end(); it++)
+    {
+	QFlowRate absFlowRate = abs((*it)->GetFlowProperties()->GetFlowRate());
+
+/*
+        if(absFlowRate < 1.e-20*unit::metre_cubed_per_second)
+        {
+		belowDetection++;
+        }
+        else if(absFlowRate > threshold)
+	{
+		perfused++;
+	}
+	else
+	{
+		unperfused++;
+	}
+
+*/
+
+
+        if(absFlowRate >= threshold)
+        {
+		perfused++;
+
+        }
+        else if((absFlowRate < threshold)&&((*it)->GetRadius()>0.0001_um))
+	{
+		unperfused++;		
+	}
+	else
+	{
+		dead++;
+	}
+        
+    }
+    //unsigned altogether = perfused+unperfused+dead;
+    //std::cout << "Altogether, that's this many vessels: " << altogether << " and this many perfused, unperfused and dead vessels" << perfused << "  " << unperfused << "  " << dead << " \n";
+    //double beta = (double)unperfused/(double)(perfused+unperfused);
+    double beta = (double)perfused/(double)(perfused+unperfused);
+    return beta;
+
+}
+
 
 template <unsigned DIM>
 bool VesselNetwork<DIM>::NodeIsInNetwork(std::shared_ptr<VesselNode<DIM> > pSourceNode)

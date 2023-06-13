@@ -50,7 +50,11 @@ Vessel<DIM>::Vessel() : AbstractVesselNetworkComponent<DIM>(),
         mOwnerRank(0),
         mIsHalo(false),
         mHasHalo(false),
-        mOtherProcessorRank(0)
+        mOtherProcessorRank(0),
+	mDistToPrevBif(0.0 * unit::metres),
+	mPreference(3),
+	mLengthFromMatrix(0.0 * unit::metres),
+	mAlive(true)
 {
 
 
@@ -67,7 +71,11 @@ Vessel<DIM>::Vessel(std::shared_ptr<VesselSegment<DIM> > pSegment) : AbstractVes
         mOwnerRank(0),
         mIsHalo(false),
         mHasHalo(false),
-        mOtherProcessorRank(0)
+        mOtherProcessorRank(0),
+	mDistToPrevBif(0.0 * unit::metres),
+	mPreference(3),
+	mLengthFromMatrix(0.0 * unit::metres),
+	mAlive(true)
 {
     mSegments.push_back(pSegment);
     mpFlowProperties->UpdateSegments(mSegments);
@@ -84,7 +92,11 @@ Vessel<DIM>::Vessel(std::vector<std::shared_ptr<VesselSegment<DIM> > > segments)
         mOwnerRank(0),
         mIsHalo(false),
         mHasHalo(false),
-        mOtherProcessorRank(0)
+        mOtherProcessorRank(0),
+	mDistToPrevBif(0.0 * unit::metres),
+	mPreference(3),
+	mLengthFromMatrix(0.0 * unit::metres),
+	mAlive(true)
 {
     if (segments.size() > 1)
     {
@@ -125,7 +137,11 @@ Vessel<DIM>::Vessel(std::vector<std::shared_ptr<VesselNode<DIM> > > nodes) :
         mOwnerRank(0),
         mIsHalo(false),
         mHasHalo(false),
-        mOtherProcessorRank(0)
+        mOtherProcessorRank(0),
+	mDistToPrevBif(0.0 * unit::metres),
+	mPreference(3),
+	mLengthFromMatrix(0.0 * unit::metres),
+	mAlive(true)
 {
 
     if (nodes.size() < 2)
@@ -153,7 +169,11 @@ Vessel<DIM>::Vessel(std::shared_ptr<VesselNode<DIM> > pStartNode, std::shared_pt
              mOwnerRank(0),
              mIsHalo(false),
              mHasHalo(false),
-             mOtherProcessorRank(0)
+             mOtherProcessorRank(0),
+	     mDistToPrevBif(0.0 * unit::metres),
+	     mPreference(3),
+	     mLengthFromMatrix(1000.0 * unit::metres),
+	     mAlive(true)
 {
     mSegments.push_back(VesselSegment<DIM>::Create(pStartNode, pEndNode));
     mpFlowProperties->UpdateSegments(mSegments);
@@ -523,6 +543,19 @@ unsigned Vessel<DIM>::GetOtherProcessorLocalIndex()
 return 0;
 }
 
+
+template<unsigned DIM>
+QLength Vessel<DIM>::GetDistToPrevBif()
+{
+return mDistToPrevBif;
+}
+
+template<unsigned DIM>
+unsigned Vessel<DIM>::GetPreference()
+{
+return mPreference;
+}
+
 template<unsigned DIM>
 std::shared_ptr<VesselFlowProperties<DIM> > Vessel<DIM>::GetFlowProperties() const
 {
@@ -541,6 +574,9 @@ std::map<std::string, double> Vessel<DIM>::GetOutputData()
     this->mOutputData["Vessel Owner Rank"] = this->GetOwnerRank();
     this->mOutputData["Vessel Is Halo"] = this->IsHalo();
     this->mOutputData["Vessel Has Halo"] = this->HasHalo();
+    this->mOutputData["Vessel Distance To Previous Bifurcation"] = this->GetDistToPrevBif();
+    this->mOutputData["Vessel Preference For Haematocrit"] = this->GetPreference();
+    this->mOutputData["Vessel Length (From Matrix)"] = this->GetLengthFromMatrix();
     return this->mOutputData;
 }
 
@@ -646,6 +682,12 @@ QLength Vessel<DIM>::GetLength() const
 }
 
 template<unsigned DIM>
+QLength Vessel<DIM>::GetLengthFromMatrix() const
+{
+    return mLengthFromMatrix;
+}
+
+template<unsigned DIM>
 QLength Vessel<DIM>::GetRadius() const
 {
     QLength radius = 0.0 * unit::metres;
@@ -742,6 +784,13 @@ std::shared_ptr<VesselNode<DIM> > Vessel<DIM>::GetStartNode()
     }
     return mNodes.front();
 }
+
+template<unsigned DIM>
+bool Vessel<DIM>::GetIsAlive()
+{
+    return mAlive;
+}
+
 
 template<unsigned DIM>
 bool Vessel<DIM>::IsConnectedTo(std::shared_ptr<Vessel<DIM> > pOtherVessel)
@@ -845,6 +894,35 @@ void Vessel<DIM>::SetOtherProcessorRank(unsigned otherRank)
 {
     mOtherProcessorRank = otherRank;
 }
+
+
+template<unsigned DIM>
+void Vessel<DIM>::SetDistToPrevBif(QLength distToPrevBif)
+{
+    mDistToPrevBif = distToPrevBif;
+}
+
+template<unsigned DIM>
+void Vessel<DIM>::SetPreference(unsigned preference)
+{
+    mPreference = preference;
+}
+
+template<unsigned DIM>
+void Vessel<DIM>::SetLengthFromMatrix(double LengthFromMatrix)
+{
+    QLength length = LengthFromMatrix*pow(10,-6)*unit::metres;
+
+    mLengthFromMatrix = length;
+}
+
+template<unsigned DIM>
+void Vessel<DIM>::SetToDie()
+{
+   
+    mAlive=false;
+}
+
 
 template<unsigned DIM>
 void Vessel<DIM>::SetOtherProcessorLocalIndex(unsigned otherIndex)

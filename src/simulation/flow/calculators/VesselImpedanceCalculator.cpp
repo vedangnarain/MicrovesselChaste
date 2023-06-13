@@ -103,6 +103,90 @@ void VesselImpedanceCalculator<DIM>::Calculate()
     }
 }
 
+template<unsigned DIM>
+void VesselImpedanceCalculator<DIM>::CalculateGetLengthFromMatrix()
+{
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels = this->mpNetwork->GetVessels();
+    for (unsigned idx = 0; idx < vessels.size(); idx++)
+    {
+        QDynamicViscosity viscosity = vessels[idx]->GetFlowProperties()->GetViscosity();
+        QFlowImpedance impedance = 8.0 * viscosity * vessels[idx]->GetLengthFromMatrix() / (M_PI * Qpow4(vessels[idx]->GetRadius()));
+        vessels[idx]->GetFlowProperties()->SetImpedance(impedance);
+    }
+}
+
+template<unsigned DIM>
+void VesselImpedanceCalculator<DIM>::CalculateFromMatrix(std::vector<std::vector<double>> rLengthsMatrix)
+{
+    	std::vector<std::shared_ptr<VesselSegment<DIM> > > segments = this->mpNetwork->GetVesselSegments();
+    	unsigned idx = 0;
+
+    	for (unsigned kdx = 0 ; kdx < rLengthsMatrix.size() ; kdx++)
+    	{
+		for (unsigned jdx = kdx; jdx < rLengthsMatrix[0].size() ; jdx++)
+		{
+			if (rLengthsMatrix[kdx][jdx] != 0)
+			{
+				QDynamicViscosity viscosity = segments[idx]->GetFlowProperties()->GetViscosity();
+
+				QLength LocalLength = 0.000001*rLengthsMatrix[kdx][jdx] * unit::metres;
+			       	QFlowImpedance impedance = 8.0 * viscosity * LocalLength / (M_PI*Qpow4(segments[idx]->GetRadius()));
+			        segments[idx]->GetFlowProperties()->SetImpedance(impedance);			
+				idx++;
+			}
+		}
+    	}
+
+}
+
+template<unsigned DIM>
+void VesselImpedanceCalculator<DIM>::CalculateFromMatrixWithPruning(std::vector<std::vector<double>> rLengthsMatrix, std::vector<std::vector<double>> rDiametersMatrix, double DimlessRadiusThreshold)
+{
+    	std::vector<std::shared_ptr<VesselSegment<DIM> > > segments = this->mpNetwork->GetVesselSegments();
+    	unsigned idx = 0;
+
+    	for (unsigned kdx = 0 ; kdx < rLengthsMatrix.size() ; kdx++)
+    	{
+		for (unsigned jdx = kdx; jdx < rLengthsMatrix[0].size() ; jdx++)
+		{
+			if (rLengthsMatrix[kdx][jdx] != 0 && rDiametersMatrix[kdx][jdx]>=2.0*DimlessRadiusThreshold)
+			{
+				QDynamicViscosity viscosity = segments[idx]->GetFlowProperties()->GetViscosity();
+
+				QLength LocalLength = 0.000001*rLengthsMatrix[kdx][jdx] * unit::metres;
+			       	QFlowImpedance impedance = 8.0 * viscosity * LocalLength / (M_PI*Qpow4(segments[idx]->GetRadius()));
+			        segments[idx]->GetFlowProperties()->SetImpedance(impedance);			
+				idx++;
+			}
+		}
+    	}
+
+}
+
+template<unsigned DIM>
+void VesselImpedanceCalculator<DIM>::CalculateFromMatrixWithPruningByLength(std::vector<std::vector<double>> rLengthsMatrix, double DimlessLengthThreshold)
+{
+    	std::vector<std::shared_ptr<VesselSegment<DIM> > > segments = this->mpNetwork->GetVesselSegments();
+    	unsigned idx = 0;
+
+    	for (unsigned kdx = 0 ; kdx < rLengthsMatrix.size() ; kdx++)
+    	{
+		for (unsigned jdx = kdx; jdx < rLengthsMatrix[0].size() ; jdx++)
+		{
+			if (rLengthsMatrix[kdx][jdx]>=DimlessLengthThreshold)
+			{
+				QDynamicViscosity viscosity = segments[idx]->GetFlowProperties()->GetViscosity();
+
+				QLength LocalLength = 0.000001*rLengthsMatrix[kdx][jdx] * unit::metres;
+			       	QFlowImpedance impedance = 8.0 * viscosity * LocalLength / (M_PI*Qpow4(segments[idx]->GetRadius()));
+			        segments[idx]->GetFlowProperties()->SetImpedance(impedance);			
+				idx++;
+			}
+		}
+    	}
+
+}
+
 // Explicit instantiation
 template class VesselImpedanceCalculator<2> ;
 template class VesselImpedanceCalculator<3> ;

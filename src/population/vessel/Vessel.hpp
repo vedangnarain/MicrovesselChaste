@@ -144,6 +144,25 @@ private:
      */
     unsigned mOtherProcessorRank;
 
+/**
+     * Distance to previous bifurcation
+     */
+    QLength mDistToPrevBif;
+
+/**
+     * Is this vessel the preferred one with respect to haematocrit splitting
+     */
+    unsigned mPreference;
+/**
+	* What is the vessel length, as assigned from matrix?
+*/
+
+    QLength mLengthFromMatrix;
+
+/**
+     * Is this vessel alive?
+     */
+    bool mAlive;
     /**
      * For serialization only
      */
@@ -290,6 +309,14 @@ public:
      */
     QLength GetLength() const;
 
+
+    /**
+     * Return the length as assigned from Matrix
+     *
+     * @return the length
+     */
+    QLength GetLengthFromMatrix() const;
+
     /**
      * Return the radius
      *
@@ -380,6 +407,13 @@ public:
      * Is this a halo vessel
      * @return Is this a halo vessel
      */
+
+    bool GetIsAlive();
+
+    /**
+     * Is this a halo vessel
+     * @return Is this a halo vessel
+     */
     bool IsHalo();
 
     /**
@@ -400,6 +434,18 @@ public:
      */
     unsigned GetOtherProcessorLocalIndex();
 
+
+    /**
+     * Get distance to previous bifurcation
+     * @return the distance
+     */
+    QLength GetDistToPrevBif();
+
+    /**
+     * Get haematocrit preference 0 or 1 for the vessel
+     * 
+     */
+    unsigned GetPreference();
     /**
      * @param pOtherVessel the other vessel to check for connect
      * @return whether the vessel is connected to another vessel.
@@ -471,6 +517,29 @@ public:
      * @param otherIndex the index of the other vessel on the other processor
      */
     void SetOtherProcessorLocalIndex(unsigned otherIndex);
+
+    /**
+     * Set distance to previous bifurcation
+     */
+
+    void SetDistToPrevBif(QLength distToPrevBif);
+
+    /**
+     * Set haematocrit preference
+     */
+
+    void SetPreference(unsigned preference);
+
+    /**
+    * assign length from matrix
+    */
+    void SetLengthFromMatrix(double LengthFromMatrix);
+
+    /**
+     * Set to die
+     */
+
+    void SetToDie();
 
     /**
      * Update the data in mNodes

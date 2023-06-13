@@ -112,6 +112,154 @@ public:
             bool fillDomain=false);
 
     /**
+     * Creates a hexagonal network corresponding to that of Alarcon et al. (2006), but with the same length for all the vessels
+     * @param width the widht
+     * @param height the height
+     * @param vesselLength the vessel length
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateHexagonalNetworkEquilateral(QLength width, QLength height, QLength vesselLength=40_um,
+            bool fillDomain=false);
+
+
+    /**
+     * Creates a hexagonal network corresponding to that of Alarcon et al. (2006), but with the same length for all the vessels
+     * @param width the widht
+     * @param height the height
+     * @param vesselLength the vessel length
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateHexagonalNetworkEquilateralMultipleInlets(QLength width, QLength height, QLength vesselLength=40_um,
+            bool fillDomain=false);
+
+ /**
+     * Creates a hexagonal network corresponding to that of Alarcon et al. (2006), but with the same length for all the vessels and (max) vessel radius as input
+     * @param width the widht
+     * @param height the height
+     * @param vesselLength the vessel length
+     * @param main_radius max radius
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateHexagonalNetworkRadius(QLength width, QLength height, QLength vesselLength, QLength main_radius,
+            bool fillDomain=false);
+
+
+    VesselNetworkPtr<DIM> GenerateVoronoiNetwork(std::vector<std::vector<double>> rEdgesMatrix);
+
+    VesselNetworkPtr<DIM> GenerateNetworkFromMatrixWithID(std::vector<std::vector<double>> rEdgesMatrix);
+
+    VesselNetworkPtr<DIM> GenerateRealNetworkFromMatrices3D(std::vector<std::vector<double>> rCoordinatesMatrix, std::vector<std::vector<double>> rDiametersMatrix);
+
+    VesselNetworkPtr<DIM> GenerateRealNetworkFromMatrices3DWithLengths(std::vector<std::vector<double>> rCoordinatesMatrix, std::vector<std::vector<double>> rDiametersMatrix, std::vector<std::vector<double>> rLengthsMatrix);
+
+    VesselNetworkPtr<DIM> GenerateVoronoiNetworkScaleRadius(std::vector<std::vector<double>> rEdgesMatrix);
+
+/**
+     * Creates a dichotomous network with decreasing length in y direction (and constant in x) for all the vessels and (max) vessel radius as input
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetwork(unsigned order, QLength main_length, QLength main_radius,
+            bool fillDomain=false);
+
+/**
+     * Creates a dichotomous network with decreasing length in y direction (and constant in x) for all the vessels and (max) vessel radius as input, and with uneven splitting of the radius
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkUneven(unsigned order, QLength main_length, QLength main_radius, double alpha,
+            bool fillDomain=false);
+
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction (and constant in x) for all the vessels and (max) vessel radius as input, and with uneven splitting of the radius
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkUnevenNoCorners(unsigned order, QLength main_length, QLength main_radius, double alpha,
+            bool fillDomain=false);
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, and with uneven splitting of the radius
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @param theta level of decrease in length between the consecutive bifurcations
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkUnevenNoCornersVaryDistance(unsigned order, QLength main_length, QLength main_radius, double alpha, double theta,
+            bool fillDomain=false);
+
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, with uneven splitting of the radius, and with vessel length following vessel radii
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @param theta level of decrease in length between the consecutive bifurcations
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkUnevenNoCornersVaryDistanceLengthsFollowRadii(unsigned order, QLength main_length, QLength main_radius, double alpha, double theta, double lambda,
+            bool fillDomain=false);
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, with uneven splitting of the radius, and with vessel length following vessel radii....more spreaded
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @param theta level of decrease in length between the consecutive bifurcations
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkUnevenNoCornersVaryDistanceLengthsFollowRadii_MoreSpreaded(unsigned order, QLength main_length, QLength main_radius, double alpha, double theta, double lambda,
+            bool fillDomain=false);
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, with uneven splitting of the radius, and with vessel length following vessel radii....more spreaded
+     * MAINLY....we want to kill off vessels now
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkForRadiotherapy(unsigned order, QLength main_length, QLength main_radius, double alpha, double lambda,
+            bool fillDomain=false);
+
+/**
+     * Creates a dichotomous network without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, with uneven splitting of the radius, and with vessel length following vessel radii....more spreaded
+     * MAINLY....we want to kill off vessels now...and heterogeneity between siblings should be random!
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @param theta level of decrease in length between the consecutive bifurcations
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateDichotomousNetworkForRadiotherapyRandomHeterogeneity(unsigned order, QLength main_length, QLength main_radius, double alpha, /*double theta,*/ double lambda,
+            bool fillDomain=false);
+
+
+/**
+     * Creates a forking network without corners
+     */
+    VesselNetworkPtr<DIM> GenerateForkingNetworkNoCorners(unsigned order, QLength main_length, QLength input_radius, double twicelambda,
+            bool fillDomain=false);
+
+
+
+
+    /**
      * Creates a hexagonal repeating unit
      * @param vesselLength the vessel length
      * @return a shared pointer to the vessel network
@@ -124,6 +272,29 @@ public:
      * @param startPosition the start position of the unit
      * @return a shared pointer to the vessel network
      */
+
+    /**
+     * Creates a square network
+     * @param width the width
+     * @param height the height
+     * @param vesselLength the vessel length
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateSquareNetwork(QLength width, QLength height, QLength vesselLength=40_um,
+            bool fillDomain=false);
+
+
+    /**
+     * Creates a square network with outlet at Top Right
+     * @param width the width
+     * @param height the height
+     * @param vesselLength the vessel length
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateSquareNetwork_TopOutput(QLength width, QLength height, QLength vesselLength=40_um,
+            bool fillDomain=false);
+
+
     VesselNetworkPtr<DIM> GenerateBifurcationUnit(QLength vesselLength, Vertex<DIM> startPosition = Vertex<DIM>());
 
     /**

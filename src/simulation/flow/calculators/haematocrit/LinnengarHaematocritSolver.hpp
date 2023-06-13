@@ -65,6 +65,8 @@ private:
      */
     QDimensionless mHaematocrit;
 
+    QDimensionless mLinnM;
+
     /**
      * Attempt to solve networks with connectivity > 3. Not in original model.
      * Haematocrit splits according to flow rate ratio only in higher connectivity cases.
@@ -128,7 +130,11 @@ public:
      * @param haematocrit the arterial haematocrit
      */
     void SetHaematocrit(QDimensionless haematocrit);
-
+    /**
+     * Set M from Linninger's model
+     * @param LinnM Linninger's M
+     */
+    void SetLinnM(QDimensionless LinnM);
     /**
      * Attempt to use higher connectivity branches
      * @param useHighConnectivity use higher connectivity branches
