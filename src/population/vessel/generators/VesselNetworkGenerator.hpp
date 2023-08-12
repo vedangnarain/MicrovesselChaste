@@ -251,6 +251,21 @@ public:
 
 
 /**
+     * INCOMPLETE
+     * Creates a dichotomous network with inlets and outlets centred in the middle of the y-axis without corners with decreasing length in y direction and also decreasing (and further on increasing) in x for all the vessels and (max) vessel radius as input, with uneven splitting of the radius, and with vessel length following vessel radii....more spreaded
+     * MAINLY....we want to kill off vessels now...and heterogeneity between siblings should be random!
+     * @param order denotes order
+     * @param main_length max length
+     * @param main_radius max radius
+     * @param alpha level of heterogeneity between daughters
+     * @param theta level of decrease in length between the consecutive bifurcations
+     * @return a shared pointer to the vessel network
+     */
+    VesselNetworkPtr<DIM> GenerateCentredDichotomousNetworkForRadiotherapy(unsigned order, QLength y_extent, QLength main_length, QLength main_radius, double alpha, /*double theta,*/ double lambda,
+            bool fillDomain=false);
+
+
+/**
      * Creates a forking network without corners
      */
     VesselNetworkPtr<DIM> GenerateForkingNetworkNoCorners(unsigned order, QLength main_length, QLength input_radius, double twicelambda,
