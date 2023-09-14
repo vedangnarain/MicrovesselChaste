@@ -219,7 +219,7 @@ public:
 
     // Change resolution of equilateral network for better visualisation
     // QLength equilateral_grid_spacing = grid_spacing;
-    QLength equilateral_grid_spacing = 1.0_um;
+    QLength equilateral_grid_spacing = 0.1_um;
 
     // Make an equilateral network on a PDE grid that acts as a Dirichlet BC in 2D 
     void xTestEquilateralNetworkLineSource2D()
@@ -348,10 +348,10 @@ public:
     }
 
     // Make an equilateral network on a PDE grid that has flow with different haematocrit splitting rules
-    void xTestEquilateralNetworkWithFlow2D()
+    void TestEquilateralNetworkWithFlow2D()
     {
         // Run the simulation with different heterogeneities
-        for (unsigned n_alpha=0; n_alpha<=4; n_alpha++)
+        for (unsigned n_alpha=4; n_alpha<=4; n_alpha++)
         {
             double alpha = 1.0+(double)n_alpha*0.1;  // alpha determines the relative radius of the left vessel 
             
@@ -6180,8 +6180,8 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Choose key parameters
-    unsigned NumberOfSeedPoints = 100;  // change this to select which Voronoi architecture to use: 25, 100, 400
-    unsigned NumberOfLayouts = 100;  // number of different point layouts to run simulations with (max. = 100)
+    unsigned NumberOfSeedPoints = 400;  // change this to select which Voronoi architecture to use: 25, 100, 400
+    unsigned NumberOfLayouts = 2;  // number of different point layouts to run simulations with (max. = 100)
     // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
 
 	// unsigned thin_selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
@@ -6195,7 +6195,7 @@ public:
     // unsigned dimless_vessel_length = 100.0;
 
     // Make a Voronoi network on a PDE grid as a Dirichlet BC in 2D 
-    void xTestVoronoiNetworkLineSource2D()
+    void TestVoronoiNetworkLineSource2D()
     {
         // Run simulations with different layouts (could be used to compute some average later)
         for (unsigned layout=1;layout < NumberOfLayouts+1; layout++)   
@@ -12410,7 +12410,7 @@ public:
     }
 
     // Make a full 2D hexagonal network on a PDE grid with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks, and kills-based pruning on the non-inlet/outlet vessels (correcting for the unexplained -50 um offset in the other simulation).
-    void TestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2D()
+    void xTestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2D()
     {
         // Initialise error log
         std::ostringstream error_log;
