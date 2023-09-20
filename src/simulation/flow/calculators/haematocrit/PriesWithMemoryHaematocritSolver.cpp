@@ -278,6 +278,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     // new bits with memory effects for dichotomous networks follow
 
     double cfl_term = 1000.0;   // this corresponds to A^{shift} \times f(l;D_P) in our paper, and should be changed to something reasonable for all vessels in this process
+    double omega = 4.0;
+    // double omega = 30.0;
 
     // get distance to previous bifurcation (also get the value in microns)
     QLength dist_to_prev_bif = me->GetDistToPrevBif();
@@ -287,8 +289,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     // X0 and its values for favourable and unfavourable branches
 
     double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
-    double X0_favor = X0*(1.0-exp(-micron_distTPB/(8*micron_parent_radius)));
-    double X0_unfavor = X0*(1.0+exp(-micron_distTPB/(8*micron_parent_radius)));
+    double X0_favor = X0*(1.0-exp(-micron_distTPB/(omega*2*micron_parent_radius)));
+    double X0_unfavor = X0*(1.0+exp(-micron_distTPB/(omega*2*micron_parent_radius)));
     double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
 
     QDimensionless modified_flow_ratio_mc;
@@ -300,11 +302,11 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     }
     else if(me->GetPreference() == 1)
     {
-        cfl_term = A_shift*exp(-micron_distTPB/(8*micron_parent_radius)); // omega is approximately 4; 2*radius = diameter
+        cfl_term = A_shift*exp(-micron_distTPB/(omega*2*micron_parent_radius)); // omega is approximately 4; 2*radius = diameter
     }
     else
     {
-        cfl_term = -A_shift*exp(-micron_distTPB/(8*micron_parent_radius));
+        cfl_term = -A_shift*exp(-micron_distTPB/(omega*2*micron_parent_radius));
     }
 
     double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0))+cfl_term;
