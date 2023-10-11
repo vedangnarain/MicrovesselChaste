@@ -356,7 +356,7 @@ public:
             double alpha = 1.0+(double)n_alpha*0.1;  // alpha determines the relative radius of the left vessel 
             
             // Run the simulation with different solvers of interest
-            for (unsigned h_solver=2; h_solver<=2; h_solver++)
+            for (unsigned h_solver=1; h_solver<=1; h_solver++)
             {    
                 // Set file name based on haematocrit solver
                 std::ostringstream strs;
@@ -580,7 +580,7 @@ public:
                 p_oxygen_solver->SetGrid(p_grid);
 
                 // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
-                double initial_haematocrit = 0.45;
+                double initial_haematocrit = 1;
                 unsigned max_iter = 1000; 
                 double tolerance2 = 1.e-10;
                 std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
@@ -2442,7 +2442,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Choose the number of bifurcating generations (inlet and outlet vessels don't count)
-    unsigned order = 6;
+    unsigned order = 7;
 
     // Make a multi-generation forking network on a PDE grid as a Dirichlet BC in 2D 
     void xTestDichotomousNetworkLineSource2D()
@@ -4600,7 +4600,7 @@ public:
     }
 
     // Make a four-generation forking network on a PDE grid with different haematocrit splitting rules to compare with Hyakutake et al. (Microvascular Research, 2022)
-    void TestFourGenerationNetworkWithFlow2D()
+    void xTestFourGenerationNetworkWithFlow2D()
     {
         // Run the simulation with different heterogeneities
         for (unsigned n_alpha=0; n_alpha<=0; n_alpha++)
@@ -4893,7 +4893,8 @@ public:
         }
     }
 
-    void xTestDichotomousNetworkWithIndividualPruningAndFlow2DAndVaryingMeansPaper1()
+    // Make a multi-generation forking network with different h-splitting rules and individual pruning
+    void TestDichotomousNetworkWithIndividualPruningAndFlow2DAndVaryingMeansPaper1()
         {
             // Initialise error log
             std::ostringstream error_log;
@@ -4908,7 +4909,9 @@ public:
             outfile.close();
 
             // Define the key pruning parameters
-            unsigned n_vessels = 250;  // number of non-inlet/outlet vessels from which to select ones to kill
+            // unsigned n_vessels = 250;  // number of non-inlet/outlet vessels from which to select ones to kill
+            unsigned n_vessels = 508;  // number of non-inlet/outlet vessels from which to select ones to kill
+            // unsigned n_vessels = 124;  // number of non-inlet/outlet vessels from which to select ones to kill
             // double percToKill = 0.2;  // percentage of vessels to kill
             // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
             unsigned ToBeKilled = n_vessels;  // number to kill
@@ -4933,7 +4936,7 @@ public:
                     BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
 
                     // Set input radius
-                    QLength input_radius(7.5 *GenericParameters::mpCapillaryRadius->GetValue());  // = *5_um
+                    QLength input_radius(8.5 *GenericParameters::mpCapillaryRadius->GetValue());  // = *5_um (*10_um for diameter)
                     // VesselNetworkPropertyManager<2>::SetSegmentRadii(p_network, vessel_radius);
 
                     // Set the viscosity
@@ -4941,9 +4944,9 @@ public:
                     // QDynamicViscosity viscosity = Owen11Parameters::mpPlasmaViscosity->GetValue();  // = 0.0012
 
                     // Set the inlet and initial haematocrit
-                    // double initial_haematocrit = 0.45;
+                    double initial_haematocrit = 0.45;
                     // double initial_haematocrit = 0.36;
-                    double initial_haematocrit = 0.54;
+                    // double initial_haematocrit = 0.54;
 
                     // Set threshold for perfusion quotient
                     QFlowRate threshold = 3.e-12*unit::metre_cubed_per_second;  // set flow threshold for what counts as a perfused vessel
@@ -6083,7 +6086,7 @@ public:
         outfile.close();
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=4; h_solver++)
+        for (unsigned h_solver=1; h_solver<=4; h_solver++)
         {   
             // Generate the network for various lambdas
             for (unsigned k_aux=1; k_aux<2; k_aux++)  // generate the network for lambda = 4
@@ -6448,7 +6451,7 @@ public:
 
                                 // Write the PQs
                                 outfile.open("/tmp/narain/testoutput/TestDichotomousNetwork/forking_random_stochastic_pruning_perfusion_quotients.txt", std::ios_base::app);
-                                outfile << network_name << " " << solver_name << " " << lambda_string << " " << alpha_string << " " << beta_string << " " << trial_string << " " << p_network->GetPerfusionQuotientBeta(threshold) << " \n"; 
+                                outfile << network_name << " " << solver_name << " " << lambda_string << " " << alpha_string << " "  << mean_string  << " " << beta_string << " " << trial_string << " " << p_network->GetPerfusionQuotientBeta(threshold) << " \n"; 
                                 outfile.close();
                                 
                                 // Write the output file (visualise with Paraview: set Filters->Alphabetical->Tube)
