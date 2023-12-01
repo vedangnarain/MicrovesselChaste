@@ -4894,7 +4894,7 @@ public:
     }
 
     // Make a multi-generation forking network with different h-splitting rules and individual pruning
-    void TestDichotomousNetworkWithIndividualPruningAndFlow2DAndVaryingMeansPaper1()
+    void xTestDichotomousNetworkWithIndividualPruningAndFlow2DAndVaryingMeansPaper1()
         {
             // Initialise error log
             std::ostringstream error_log;
@@ -7041,7 +7041,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // Choose heterogeneity parameters
-	unsigned thin_selections = 2;  // number of layouts from which to choose thin vessels (upto 100)
+	unsigned thin_selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
     unsigned NHet = 5;  // number of heterogeneity selections (upto 5)
     QLength large_vessel_radius = 10_um;
     QLength small_vessel_radius = 5_um;    
@@ -12718,7 +12718,7 @@ public:
     }
 
     // Make a full 2D hexagonal network on a PDE grid with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks, and kills-based pruning on the non-inlet/outlet vessels (correcting for the unexplained -50 um offset in the other simulation).
-    void xTestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2D()
+    void xTestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2DPaper1()
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -12748,11 +12748,11 @@ public:
         unsigned n_vessels = 386;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
         // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
-        // unsigned ToBeKilled = 200;  // number to kill
-        unsigned ToBeKilled = 2;  // number to kill
+        unsigned ToBeKilled = 200;  // number to kill
+        // unsigned ToBeKilled = 2;  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=4; h_solver++)
+        for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -12797,7 +12797,7 @@ public:
                     radii_array.clear();
                     // int list_index=0;
                     string line_1;
-                    std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_radius_log_normal_distribution_sigma_8.68/mu_"+alpha+"/radii_list_"+to_string(list_number)+".txt");
+                    std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_diameter_log_normal_distribution_sigma_8.68/mu_"+alpha+"/radii_list_"+to_string(list_number)+".txt");
                     while (std::getline(radius_list_file, line_1)) 
                     {
                         radii_array.push_back(std::vector<double>());
@@ -12814,7 +12814,7 @@ public:
                     id_array.clear();
                     // int list_index=0;
                     string line_2;
-                    std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_radius_log_normal_distribution_sigma_8.68/mu_"+alpha+"/id_list_"+to_string(list_number)+".txt");
+                    std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_diameter_log_normal_distribution_sigma_8.68/mu_"+alpha+"/id_list_"+to_string(list_number)+".txt");
                     while (std::getline(id_list_file, line_2)) 
                     {
                         id_array.push_back(std::vector<double>());
