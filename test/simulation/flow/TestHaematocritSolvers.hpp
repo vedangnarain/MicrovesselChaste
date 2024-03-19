@@ -12612,8 +12612,8 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Choose key parameters
-    unsigned NumberOfSeedPoints = 400;  // change this to select which Voronoi architecture to use: 25, 100, 400
-    unsigned NumberOfLayouts = 5;  // number of different point layouts to run simulations with (max. = 100)
+    unsigned NumberOfSeedPoints = 100;  // change this to select which Voronoi architecture to use: 25, 100, 400
+    unsigned NumberOfLayouts = 101;  // number of different point layouts to run simulations with (add an extra selection for a demo)
     // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
 
 	// unsigned thin_selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
@@ -12737,7 +12737,7 @@ public:
     }
 
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting
-    void TestVoronoiNetworkWithFlow2D() 
+    void xTestVoronoiNetworkWithFlow2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -13166,7 +13166,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -13177,10 +13177,10 @@ public:
 
         // Create the output file for the PQs
         std::ofstream outfile;
-        outfile.open("/tmp/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt");
+        outfile.open("/scratch/narain/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt");
         outfile.close();
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/tmp/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/TestVoronoiNetwork/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -13223,8 +13223,8 @@ public:
                 
                 // Read the network layout from a file
                 VesselNetworkGenerator<2> network_generator;
-                // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(100)+"SeedPoints/verified_edge_matrices/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
-                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/verified_edge_matrices/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 std::vector<std::vector<double> > rEdgesMatrix;
                 string line;
                 while (std::getline(in, line)) 
@@ -13264,8 +13264,8 @@ public:
                             radii_array.clear();
                             // int list_index=0;
                             string line_1;
-                            // std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(100)+"SeedPoints/verified_diameter_distributions/voronoi_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+alpha+"/radii_list_"+to_string(layout)+".txt");
-                            std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/voronoi_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+alpha+"/radii_list_"+to_string(layout)+".txt");
+                            std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/verified_diameter_distributions/voronoi_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+alpha+"/radii_list_"+to_string(layout)+".txt");
+                            // std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(NumberOfSeedPoints)+"SeedPoints/voronoi_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+alpha+"/radii_list_"+to_string(layout)+".txt");
                             while (std::getline(radius_list_file, line_1)) 
                             {
                                 radii_array.push_back(std::vector<double>());
@@ -13544,12 +13544,12 @@ public:
                                 // If simulation doesn't converge, move on to next layout and log problem 
                                 if (broken_solver == 1)
                                 {
-                                    broken_layouts_file.open("/tmp/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                                    broken_layouts_file.open("/scratch/narain/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
                                     broken_layouts_file << selection_string << " \n"; 
                                     broken_layouts_file.close();
 
                                     // Delete a selection folder if a single convergence fails
-                                    std::string folderPath = "/tmp/narain/testoutput/" + network_name + solver_name + "/Selection" + selection_string;
+                                    std::string folderPath = "/scratch/narain/" + network_name + solver_name + "/Selection" + selection_string;
                                     try 
                                     {
                                         // Check if the folder exists
@@ -13600,7 +13600,7 @@ public:
                                 // QFlowRate threshold = 2.e-13*unit::metre_cubed_per_second; 
                                 PerfusionQuotient = p_network->GetPerfusionQuotientBeta(threshold);
                                 // QuotientMatrixAggregate[i][KilledVessels] += PerfusionQuotient;  // store the PQ with the associated NHet and number of kills
-                                outfile.open("/tmp/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt", std::ios_base::app);
+                                outfile.open("/scratch/narain/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt", std::ios_base::app);
                                 // outfile << network_name << " " << solver_name << " " << heterogeneity_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                                 // outfile << network_name << " " << solver_name << " " << mean_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                                 outfile << network_name << " " << solver_name << " " << selection_string << " " << sd_string << " " << mean_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
