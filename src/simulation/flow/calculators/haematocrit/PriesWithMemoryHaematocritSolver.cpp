@@ -374,7 +374,13 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             favoured = is_a_left[updateIndices[idx][0]];
         }
         //Moment of truth.  This is where we will set any unset quantities
-        assert(favoured == me->GetPreference());
+        if (me->GetPreference() != 0 && me->GetPreference() != 1)
+        {
+            assert(me->GetPreference() == UNSIGNED_UNSET);
+            me->SetPreference(favoured);
+            me->SetDistToPrevBif(parent->GetLength());
+        }
+
         if (me->GetDistToPrevBif() != parent->GetLength())
         {
             WARN_ONCE_ONLY("Set distance to previous bifurcation does not match actual distance");
@@ -479,7 +485,11 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     }
     else
     {
-        assert(me->GetPreference()==0);
+        // If preference is unset then both daughter of the bifurcation will go here.  That is, they 
+        // are both unfavourable and red blood cells are not conserved!
+        // Non-conservation should only happen in the 1st iteration of the solver.
+        assert(me->GetPreference()==0 || me->GetPreference()==UNSIGNED_UNSET);
+        //if (me->GetPreference()==UNSIGNED_UNSET) TRACE("Unset preference");
         if(Qabs(my_flow_rate)/Qabs(parent_flow_rate) < X0_unfavor)
         {
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), 0.0);
