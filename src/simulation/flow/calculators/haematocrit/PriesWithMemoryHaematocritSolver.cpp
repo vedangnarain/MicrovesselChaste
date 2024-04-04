@@ -40,6 +40,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Exception.hpp"
 #include "ReplicatableVector.hpp"
 #include "RandomNumberGenerator.hpp"
+#include "Warnings.hpp"
+//#include "Debug.hpp"
 
 template<unsigned DIM>
 PriesWithMemoryHaematocritSolver<DIM>::PriesWithMemoryHaematocritSolver() : AbstractHaematocritSolver<DIM>(),
@@ -196,6 +198,9 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
         }
     }
 
+    // Necessary if using the Pries with memory splitting rule dynamically
+    CalculateVesselPreferences(update_indices);
+
     // Set the parameters for iteration; we will be solving a nonlinear system
     double tolerance = 1e-10;
     double max_iterations = 1000;
@@ -259,6 +264,125 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
 }
 
 template<unsigned DIM>
+void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vector<std::vector<int> > updateIndices)
+{
+    assert(DIM == 2);
+    std::vector<std::shared_ptr<Vessel<DIM> > > vessels = this->mpNetwork->GetVessels();
+    unsigned num_vessels=vessels.size();
+    std::vector<bool> is_a_left(num_vessels);
+    std::vector<bool> direction_set(num_vessels,false);
+ 
+    // Sweep through looking for left and right turns
+    for (unsigned idx=0; idx<updateIndices.size(); idx++)
+    {
+        std::shared_ptr<Vessel<DIM> > me = vessels[updateIndices[idx][0]];
+        std::shared_ptr<Vessel<DIM> > parent = vessels[updateIndices[idx][1]];
+        std::shared_ptr<Vessel<DIM> > competitor = vessels[updateIndices[idx][2]];
+        
+        std::shared_ptr<VesselNode<DIM> > p_upstream_node = parent->GetStartNode();
+        std::shared_ptr<VesselNode<DIM> > p_mid_node = parent->GetEndNode();
+        if(parent->GetFlowProperties()->GetFlowRate() < (0.0 * unit::metre_cubed_per_second))
+        {
+            p_upstream_node = parent->GetEndNode();
+            p_mid_node = parent->GetStartNode();
+        }
+
+        std::shared_ptr<VesselNode<DIM> > p_mid_node2 = me->GetStartNode();
+        std::shared_ptr<VesselNode<DIM> > p_downstream_node = me->GetEndNode();
+        if(me->GetFlowProperties()->GetFlowRate() < (0.0 * unit::metre_cubed_per_second))
+        {
+            p_mid_node2 = me->GetEndNode();
+            p_downstream_node = me->GetStartNode();
+        }
+
+        assert(p_mid_node2 == p_mid_node);
+        
+        std::shared_ptr<VesselNode<DIM> > p_mid_node3 = competitor->GetStartNode();
+        std::shared_ptr<VesselNode<DIM> > p_downstream_node_comp = competitor->GetEndNode();
+        if(competitor->GetFlowProperties()->GetFlowRate() < (0.0 * unit::metre_cubed_per_second))
+        {
+            p_mid_node3 = competitor->GetEndNode();
+            p_downstream_node_comp = competitor->GetStartNode();
+        }
+
+        assert(p_mid_node3 == p_mid_node);
+
+        // Non-dimensional locations
+        c_vector<double, DIM>  a = p_upstream_node->rGetLocation().Convert(unit::metres);
+        c_vector<double, DIM>  b = p_mid_node->rGetLocation().Convert(unit::metres);
+        c_vector<double, DIM>  c = p_downstream_node->rGetLocation().Convert(unit::metres);
+        c_vector<double, DIM>  c_comp = p_downstream_node_comp->rGetLocation().Convert(unit::metres);
+        //PRINT_2_VARIABLES(a[0],a[1]);
+        //PRINT_2_VARIABLES(b[0],b[1]);
+        //PRINT_2_VARIABLES(c[0],c[1]);
+        //PRINT_2_VARIABLES(c_comp[0],c_comp[1]);
+        // \todo Normalise the lengths so that they are comparable
+        // See Geometric modelling lecture 1 or "Computational geometry in C (O'Rourke)" Chapter 1
+        double determinant = a[0]*(b[1]-c[1]) + b[0]*(c[1]-a[1]) + c[0]*(a[1]-b[1]);
+        double determinant_comp = a[0]*(b[1]-c_comp[1]) + b[0]*(c_comp[1]-a[1]) + c_comp[0]*(a[1]-b[1]);
+        //PRINT_3_VARIABLES(me->GetId(), parent->GetId(), (determinant>=determinant_comp));
+        if (determinant > determinant_comp)
+        {
+            // I am the left turn
+            if (!direction_set[updateIndices[idx][0]])
+            {
+                is_a_left[updateIndices[idx][0]]=true;
+                is_a_left[updateIndices[idx][2]]=false;
+                direction_set[updateIndices[idx][0]]=true;
+                direction_set[updateIndices[idx][2]]=true;
+            }
+            else
+            {
+                assert(is_a_left[updateIndices[idx][0]] == true);
+                assert(is_a_left[updateIndices[idx][2]] == false);             
+                assert(direction_set[updateIndices[idx][2]]);             
+            }
+        }
+        else
+        {
+            // I am the right turn
+            if (!direction_set[updateIndices[idx][0]])
+            {
+                is_a_left[updateIndices[idx][0]]=false;
+                is_a_left[updateIndices[idx][2]]=true;
+                direction_set[updateIndices[idx][0]]=true;
+                direction_set[updateIndices[idx][2]]=true;
+            }
+            else
+            {
+                assert(is_a_left[updateIndices[idx][0]] == false);
+                assert(is_a_left[updateIndices[idx][2]] == true);             
+                assert(direction_set[updateIndices[idx][2]]);             
+            }
+
+        }
+    }
+    // Second sweep through looking for favourable branches
+    for (unsigned idx=0; idx<updateIndices.size(); idx++)
+    {
+        std::shared_ptr<Vessel<DIM> > me = vessels[updateIndices[idx][0]];
+        std::shared_ptr<Vessel<DIM> > parent = vessels[updateIndices[idx][1]];
+        //Most times the parent had a bifurcation and therefore is recovering
+        bool favoured;
+        if (direction_set[updateIndices[idx][1]])
+        {
+            favoured = is_a_left[updateIndices[idx][1]] ^ is_a_left[updateIndices[idx][0]];
+        }
+        else
+        {
+            favoured = is_a_left[updateIndices[idx][0]];
+        }
+        //Moment of truth.  This is where we will set any unset quantities
+        assert(favoured == me->GetPreference());
+        if (me->GetDistToPrevBif() != parent->GetLength())
+        {
+            WARN_ONCE_ONLY("Set distance to previous bifurcation does not match actual distance");
+        }
+        //PRINT_2_VARIABLES(updateIndices[idx][0], favoured);
+    }
+}
+
+template<unsigned DIM>
 void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Vessel<DIM> > me, std::shared_ptr<Vessel<DIM> > comp,
                                                     std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem)
 {
@@ -310,11 +434,12 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0))+cfl_term;
 
     double term2 = exp(A);
-    // Apply extended Pries rule
 
     if(parent->GetStartNode()->GetFlowProperties()->IsInputNode() or
                 parent->GetEndNode()->GetFlowProperties()->IsInputNode())
     {
+        // If the parent segment is fed by a prescribed input then we assume that the cell-free layer is symmetric.
+        // This means that we apply the usual (Pries) splitting rule 
         if(Qabs(my_flow_rate)/Qabs(parent_flow_rate) < X0)
         {
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), 0.0);
@@ -332,7 +457,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), -numer/denom);
         }
     }
-    else if(me->GetPreference() == 1)
+    else if(me->GetPreference() == 1)     // Apply extended Pries rule with preference to left.
     {
         if(Qabs(my_flow_rate)/Qabs(parent_flow_rate) < X0_favor)
         {
@@ -353,6 +478,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     }
     else
     {
+        assert(me->GetPreference()==0);
         if(Qabs(my_flow_rate)/Qabs(parent_flow_rate) < X0_unfavor)
         {
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), 0.0);

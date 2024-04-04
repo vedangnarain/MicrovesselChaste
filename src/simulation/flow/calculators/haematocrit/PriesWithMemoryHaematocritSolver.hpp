@@ -114,6 +114,17 @@ public:
      */
     void UpdateBifurcation(std::shared_ptr<Vessel<DIM> > me, std::shared_ptr<Vessel<DIM> > comp,
                            std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem);
+
+    /**
+     * Helper function.
+     * Calculate or recalculate the preference of each vessel that is the daughter of
+     * a bifurcation.  The preference is set to 1 if it's a left/right turn following a right/left
+     * @param updateIndices - indices of vessels that are daugther of a bifurcation.  These are
+     *                        triples: 0=vessel to be updated, 1=parent index, 2=competitor index 
+     */
+    void CalculateVesselPreferences(std::vector<std::vector<int> > updateIndices);
+
+
 };
 
 #endif
