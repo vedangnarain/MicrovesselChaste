@@ -308,19 +308,19 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
         assert(p_mid_node3 == p_mid_node);
 
         // Non-dimensional locations
-        c_vector<double, DIM>  a = p_upstream_node->rGetLocation().Convert(unit::metres);
-        c_vector<double, DIM>  b = p_mid_node->rGetLocation().Convert(unit::metres);
-        c_vector<double, DIM>  c = p_downstream_node->rGetLocation().Convert(unit::metres);
-        c_vector<double, DIM>  c_comp = p_downstream_node_comp->rGetLocation().Convert(unit::metres);
-        //PRINT_2_VARIABLES(a[0],a[1]);
-        //PRINT_2_VARIABLES(b[0],b[1]);
-        //PRINT_2_VARIABLES(c[0],c[1]);
-        //PRINT_2_VARIABLES(c_comp[0],c_comp[1]);
-        // \todo Normalise the lengths so that they are comparable
+        c_vector<double, DIM>  up = p_upstream_node->rGetLocation().Convert(unit::metres);
+        c_vector<double, DIM>  b = p_mid_node->rGetLocation().Convert(unit::metres)-up;
+        c_vector<double, DIM>  c = p_downstream_node->rGetLocation().Convert(unit::metres)-up;
+        c_vector<double, DIM>  c_comp = p_downstream_node_comp->rGetLocation().Convert(unit::metres)-up;
+        // Normalise lengths so that comparing areas is equivalent to comparing angles
+        b /= norm_2(b);
+        c /= norm_2(c);
+        c_comp /= norm_2(c_comp);
+
         // See Geometric modelling lecture 1 or "Computational geometry in C (O'Rourke)" Chapter 1
-        double determinant = a[0]*(b[1]-c[1]) + b[0]*(c[1]-a[1]) + c[0]*(a[1]-b[1]);
-        double determinant_comp = a[0]*(b[1]-c_comp[1]) + b[0]*(c_comp[1]-a[1]) + c_comp[0]*(a[1]-b[1]);
-        //PRINT_3_VARIABLES(me->GetId(), parent->GetId(), (determinant>=determinant_comp));
+        double determinant = b[0]*c[1] - c[0]*b[1];
+        double determinant_comp = b[0]*c_comp[1] - c_comp[0]*b[1];
+        
         if (determinant > determinant_comp)
         {
             // I am the left turn
@@ -362,14 +362,15 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
     {
         std::shared_ptr<Vessel<DIM> > me = vessels[updateIndices[idx][0]];
         std::shared_ptr<Vessel<DIM> > parent = vessels[updateIndices[idx][1]];
-        //Most times the parent had a bifurcation and therefore is recovering
         bool favoured;
+        //On most bifurcationa the parent also had a bifurcation which it is recovering from
         if (direction_set[updateIndices[idx][1]])
         {
             favoured = is_a_left[updateIndices[idx][1]] ^ is_a_left[updateIndices[idx][0]];
         }
         else
         {
+            // Parent is an input.  We don't necessarily need to set or use the favourite
             favoured = is_a_left[updateIndices[idx][0]];
         }
         //Moment of truth.  This is where we will set any unset quantities
