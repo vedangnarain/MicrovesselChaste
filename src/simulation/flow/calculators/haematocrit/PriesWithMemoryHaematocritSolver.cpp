@@ -184,7 +184,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
                 }
                 else // Divergence (1 parent, 1 competitor)
                 {
-                    UpdateBifurcation(vessels[idx], competitor_vessels[0], parent_vessels[0], linear_system);
+                    UpdateBifurcation(vessels[idx], competitor_vessels[0], parent_vessels[0], linear_system, true);
 
                     // Save the indices for later updating
                     std::vector<int> local_update_indices = std::vector<int>(3);
@@ -215,7 +215,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
             linear_system.SwitchWriteModeLhsMatrix();
             for(unsigned idx=0; idx<update_indices.size();idx++)
             {
-                UpdateBifurcation(vessels[update_indices[idx][0]], vessels[update_indices[idx][2]], vessels[update_indices[idx][1]], linear_system);
+                UpdateBifurcation(vessels[update_indices[idx][0]], vessels[update_indices[idx][2]], vessels[update_indices[idx][1]], linear_system, false);
             }
         }
 
@@ -391,7 +391,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
 
 template<unsigned DIM>
 void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Vessel<DIM> > me, std::shared_ptr<Vessel<DIM> > comp,
-                                                    std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem)
+                                                    std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem, bool firstTime)
 {
     QFlowRate my_flow_rate = me->GetFlowProperties()->GetFlowRate();
     QFlowRate competitor_flow_rate = comp->GetFlowProperties()->GetFlowRate();
@@ -488,7 +488,10 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
         // If preference is unset then both daughter of the bifurcation will go here.  That is, they 
         // are both unfavourable and red blood cells are not conserved!
         // Non-conservation should only happen in the 1st iteration of the solver.
-        assert(me->GetPreference()==0 || me->GetPreference()==UNSIGNED_UNSET);
+        if (!firstTime)
+        {
+            assert(me->GetPreference()==0);
+        }
         //if (me->GetPreference()==UNSIGNED_UNSET) TRACE("Unset preference");
         if(Qabs(my_flow_rate)/Qabs(parent_flow_rate) < X0_unfavor)
         {

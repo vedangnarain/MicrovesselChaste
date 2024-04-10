@@ -111,9 +111,10 @@ public:
      * @param comp - competitor/sibling vessel
      * @param parent - parent/feeding vessel
      * @param rLinearSystem - the linear system
+     * @param firstTime - indicates whether this is the first time of putting this vessel into the solver (or if it's a later iteration)
      */
     void UpdateBifurcation(std::shared_ptr<Vessel<DIM> > me, std::shared_ptr<Vessel<DIM> > comp,
-                           std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem);
+                           std::shared_ptr<Vessel<DIM> > parent, LinearSystem& rLinearSystem, bool firstTime);
 
     /**
      * Helper function.
