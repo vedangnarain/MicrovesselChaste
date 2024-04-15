@@ -278,8 +278,14 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     // new bits with memory effects for dichotomous networks follow
 
     double cfl_term = 1000.0;   // this corresponds to A^{shift} \times f(l;D_P) in our paper, and should be changed to something reasonable for all vessels in this process
-    double omega = 4.0;
-    // double omega = 30.0;
+    // double omega = 2.0;
+    double omega = 4.0;  // original value
+    // double omega = 8.0;
+    // double omega = 16.0;
+    // double omega = 32.0;
+    // double omega = 64.0;
+    // double omega = 128.0;
+    // double omega = 256.0;
 
     // get distance to previous bifurcation (also get the value in microns)
     QLength dist_to_prev_bif = me->GetDistToPrevBif();
