@@ -42,6 +42,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "VesselNetworkGenerator.hpp"
 #include "VesselNetworkGeometryCalculator.hpp"
 #include "VesselNetworkPropertyManager.hpp"
+//#include "Debug.hpp"
 
 template<unsigned DIM>
 VesselNetworkGenerator<DIM>::VesselNetworkGenerator() :
@@ -2413,11 +2414,17 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateForkin
     double alpha = 1.0;
 
     double dimless_length = 1.0;
-
-    for(unsigned i_aux3=1; i_aux3<order+1; i_aux3++)
-    	{
-	dimless_length += pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux3-1)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i_aux3-1)));
-    	}
+    std::vector<double> x_lengths(order+1);
+    x_lengths[0] = 1.0;
+    for (unsigned i_aux3=1; i_aux3<order+1; i_aux3++)
+    {
+        ///\todo
+        //dimless_length += pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux3-1)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i_aux3-1)/3));
+        x_lengths[i_aux3] = pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux3-1)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i_aux3-1)));
+        dimless_length += x_lengths[i_aux3];
+    }
+    //PRINT_VECTOR(x_lengths);
+    //PRINT_2_VARIABLES(dimless_length, std::accumulate(x_lengths.begin(), x_lengths.end(), 0.0));
     //dimensional horizontal length of the domain
     QLength domain_length = dimless_length*2.0*twicelambda*input_radius;
     
@@ -2431,63 +2438,84 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateForkin
     for(unsigned i=0; i<order; i++)
     {
 
-    double aux_dimless_length = 1.0;
+        double aux_dimless_length = 1.0;
 
-    // Each unit is scaled by (1/2)**3 but its height is always 0.9*its diagonal length
-    // Here we calculate the width of each unit which is related by sqrt(1^2-0.9^2).
+        // Each unit is scaled by (1/2)**3 but its height is always 0.9*its diagonal length
+        // Here we calculate the width of each unit which is related by sqrt(1^2-0.9^2).
     
-    for(unsigned i_aux2=0; i_aux2<i; i_aux2++)
-    {
-	//\TODO Bug: see the correction below:
-    //  aux_dimless_length += pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux2)/3.0)-pow(0.9,2.0)*pow(2.0, -2.0*double(i_aux2)/3));
-	    aux_dimless_length += pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux2)/3.0)-pow(0.9,2.0)*pow(2.0, -2.0*double(i_aux2)));
-    }
-    
-    // auxiliary variable calculating x-coordinates for nodes of vessels to be added
-    QLength aux_dimensional_length = aux_dimless_length*twicelambda*input_radius;
+        for(unsigned i_aux2=0; i_aux2<i; i_aux2++)
+        {
+            ///\todo Bug: see the correction below:
+            //  aux_dimless_length += pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux2)/3.0)-pow(0.9,2.0)*pow(2.0, -2.0*double(i_aux2)/3));
+            aux_dimless_length += x_lengths[i_aux2+1];//pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i_aux2)/3.0)-pow(0.9,2.0)*pow(2.0, -2.0*double(i_aux2)));
+        }
+        
+        // auxiliary variable calculating x-coordinates for nodes of vessels to be added
+        QLength aux_dimensional_length = aux_dimless_length*twicelambda*input_radius;
+        //PRINT_VARIABLE(twicelambda*input_radius);
+            
+        // the following for loop calculates order of the vessels being added
+        // the order is stored in "count" variable after the for loop is finished, and will be used to assign vessel radii
+        ///\todo Actually "count" stores the number of 1s in the binary expansion of j. Indicate number of lefts?  Is "order" the same as generation number
+        for(unsigned j=0; j<pow(2,i); j++)
+        {
+            unsigned aux = j;
+            unsigned count=0;
+            while(aux>0)
+            {
+                count+=aux%2;
+                aux/=2;
+            }
+            // count = number of 1s in j
+        
+            // add vessels to the first half of the domain
+            double y_start = pow(0.5,double(i)-1.0)*main_length*(1.0+2.0*double(j));
+            double y_outer = pow(0.5,double(i)-1.0)*main_length*(1.5+2.0*double(j));
+            double y_inner = pow(0.5,double(i)-1.0)*main_length*(0.5+2.0*double(j));
+            //PRINT_4_VARIABLES(y_start,y_outer,y_inner, y_outer-y_start);
+            //PRINT_4_VARIABLES(y_start/main_length,y_outer/main_length,y_inner/main_length, (y_outer-y_start)/main_length);
 
-	    // the following for loop calculates order of the vessels being added
-  	    // the order is stored in "count" variable after the for loop is finished, and will be used to assign vessel radii
-	    for(unsigned j=0; j<pow(2,i); j++)
-	    {
-	    unsigned aux = j;
-	    unsigned count=0;
-	    while(aux>0)
-	    {
-	    count+=aux%2;
-	    aux/=2;
-	    }
-	
-	    // add vessels to the first half of the domain
-		
-	    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(aux_dimensional_length,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(1.0+2.0*double(j))),
-  					     VesselNode<DIM>::Create((aux_dimless_length+pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i)/3.0)-pow(0.9,2.0)*pow(2.0, -2.0*double(i))))*twicelambda*input_radius,
-	                                                                     pow(0.5,double(i)-1.0)*main_length*(1.5+2.0*double(j))));
-
-        // OwnerRank here will serve to store information on vessel order
-	    pAuxVessel->SetOwnerRank(i+1);  
-	    // radii follow Murray's law
+            pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(aux_dimensional_length, y_start),
+                                VesselNode<DIM>::Create((aux_dimless_length+x_lengths[i+1])*twicelambda*input_radius, y_outer));
+	        
+            // OwnerRank here will serve to store information on vessel order (generation number)
+	        pAuxVessel->SetOwnerRank(i+1);  
+	        // radii follow Murray's law
+            //\todo check
             pAuxVessel->SetRadius(pow(alpha,double(count)+1.0)*input_radius/pow(1.0+alpha*alpha*alpha,(double(i)+1.0)/3.0));
-	    // distance to previous bifurcation is hardcoded
-	    pAuxVessel->SetDistToPrevBif(twicelambda*pow(alpha,double(count))*input_radius/pow(1.0+alpha*alpha*alpha,double(i)/3.0));
-            // preference for haematocrit is hardcoded
-	    if(j % 2 == 0)
-	    {
-	    pAuxVessel->SetPreference(1);
-	    }
-	    else
-	    {
-	    pAuxVessel->SetPreference(0);
-	    }
+	        //\todo check
+            // distance to previous bifurcation is hardcoded
+            pAuxVessel->SetDistToPrevBif(twicelambda*pow(alpha,double(count))*input_radius/pow(1.0+alpha*alpha*alpha,double(i)/3.0));
+            //double actual_length = pAuxVessel->GetLength();
+            if (alpha == 1.0)
+            {
+                // In symmetric networks this should actually scale by the third root of a half per generation 
+                assert( std::fabs( input_radius/pow(2.0, (i+1.0)/3.0) - pAuxVessel->GetRadius()) < 1e-15);
+                double dimless_dist_prev = pAuxVessel->GetDistToPrevBif()/(twicelambda*input_radius);
+                //PRINT_VARIABLE(dimless_dist_prev);
+                assert( std::fabs( pow(0.5, i/3.0) - dimless_dist_prev) < 1e-15);
+                
+                //PRINT_VARIABLE( std::fabs(pAuxVessel->GetDistToPrevBif()/pAuxVessel->GetRadius()));
+                //PRINT_2_VARIABLES( , actual_length/(twicelambda*input_radius));
+                
+            }
 
-	    pVesselNetwork->AddVessel(pAuxVessel);
+
+            // preference for haematocrit is hardcoded
+	        if(j % 2 == 0)
+	        {
+	            pAuxVessel->SetPreference(1);
+            }
+            else
+            {
+                pAuxVessel->SetPreference(0);
+            }
+
+	        pVesselNetwork->AddVessel(pAuxVessel);
    
 	  
-	    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(aux_dimensional_length,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(1.0+2.0*double(j))),
-                                             VesselNode<DIM>::Create((aux_dimless_length+pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i))))*twicelambda*input_radius,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(0.5+2.0*double(j))));
+	        pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(aux_dimensional_length, y_start),
+                                             VesselNode<DIM>::Create((aux_dimless_length+x_lengths[i+1])*twicelambda*input_radius, y_inner));
 
             pAuxVessel->SetOwnerRank(i+1);  
 
@@ -2495,24 +2523,22 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateForkin
 
 	    pAuxVessel->SetDistToPrevBif(twicelambda*pow(alpha,double(count))*input_radius/pow(1.0+alpha*alpha*alpha,double(i)/3.0));
 
-	    if(j % 2 == 0)
-	    {
-	    pAuxVessel->SetPreference(0);
-	    }
-	    else
-	    {
-	    pAuxVessel->SetPreference(1);
-	    }
+    	    if(j % 2 == 0)
+	        {
+	            pAuxVessel->SetPreference(0);
+	        }
+	        else
+	        {
+	            pAuxVessel->SetPreference(1);
+	        }
             pVesselNetwork->AddVessel(pAuxVessel);
 
 
-	    // add vessels to the second half of the domain
+	        // add vessels to the second half of the domain
 
 
-	    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length-aux_dimensional_length,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(1.0+2.0*double(j))),
-                                                                           VesselNode<DIM>::Create(domain_length-(aux_dimless_length+pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i))))*twicelambda*input_radius,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(1.5+2.0*double(j))));
+	        pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length-aux_dimensional_length, y_start),
+                                    VesselNode<DIM>::Create(domain_length-(aux_dimless_length+x_lengths[i+1])*twicelambda*input_radius, y_outer));
 
 	   
             // radii and owner ranks ("orders") are assigned symmetrically to the first half
@@ -2521,36 +2547,32 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateForkin
             pVesselNetwork->AddVessel(pAuxVessel);
 
 
-	    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length-aux_dimensional_length,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(1.0+2.0*double(j))),
-                                                                           VesselNode<DIM>::Create(domain_length-(aux_dimless_length+pow(2.0,-1/3)*sqrt(pow(2.0,-2.0*double(i)/3.0)-pow(0.9,2)*pow(2.0, -2.0*double(i))))*twicelambda*input_radius,
-                                                                                  pow(0.5,double(i)-1.0)*main_length*(0.5+2.0*double(j))));
-
+	        pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length-aux_dimensional_length, y_start),
+                                        VesselNode<DIM>::Create(domain_length-(aux_dimless_length+x_lengths[i+1])*twicelambda*input_radius, y_inner));
             pAuxVessel->SetOwnerRank(i+1);  
             pAuxVessel->SetRadius(pow(alpha,double(count))*input_radius/pow(1.0+alpha*alpha*alpha,(double(i)+1.0)/3.0));
             pVesselNetwork->AddVessel(pAuxVessel);
 
-            }
+        }
 	   
     }
 
     // add input vessel
  
-    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(0.0*main_length,
-                                                                                  2.0*main_length),
-                                                                           VesselNode<DIM>::Create(twicelambda*input_radius,
-                                                                                  2.0*main_length));
+    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(0.0*main_length,         2.0*main_length),
+                                    VesselNode<DIM>::Create(twicelambda*input_radius, 2.0*main_length));
 
     pAuxVessel->SetOwnerRank(0);
     pAuxVessel->SetRadius(input_radius);
+    //PRINT_2_VARIABLES(pAuxVessel->GetRadius(), input_radius);
+    //PRINT_2_VARIABLES(pAuxVessel->GetLength(), main_length);
+    //PRINT_VARIABLE(pAuxVessel->GetLength() / (2.0*pAuxVessel->GetRadius()));
     pVesselNetwork->AddVessel(pAuxVessel);
 
-   // add output vessel
+    // add output vessel
 
-    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length,
-                                                                                  2.0*main_length),
-                                                                           VesselNode<DIM>::Create(domain_length-twicelambda*input_radius,
-                                                                                  2.0*main_length));
+    pAuxVessel = Vessel<DIM>::Create(VesselNode<DIM>::Create(domain_length,                         2.0*main_length),
+                                    VesselNode<DIM>::Create(domain_length-twicelambda*input_radius, 2.0*main_length));
     pAuxVessel->SetOwnerRank(0);
     pAuxVessel->SetRadius(input_radius);
     pVesselNetwork->AddVessel(pAuxVessel);
