@@ -286,6 +286,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     // double omega = 64.0;
     // double omega = 128.0;
     // double omega = 256.0;
+    // double omega = 512.0;
+    // double omega = 1024.0;
 
     // get distance to previous bifurcation (also get the value in microns)
     QLength dist_to_prev_bif = me->GetDistToPrevBif();
