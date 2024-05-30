@@ -2325,7 +2325,7 @@ public:
     }
 
     // Make a heterogeneous 2D hexagonal network on a PDE grid with flow and H-splitting (with a neighbourhood of units)
-    void xTestHexagonalNeighbourhoodWithFlowAndHeterogeneity2D()
+    void TestHexagonalNeighbourhoodWithFlowAndHeterogeneity2D()
     {
         // Set up the reference length for the simulation
         QLength reference_length(1.0_um);
@@ -2587,8 +2587,8 @@ public:
                         // p_grid->SetSpacing(irregular_grid_spacing);
                         p_grid->SetSpacing(grid_spacing);    
                         c_vector<unsigned, 3> dimensions;
-                        dimensions[0] = unsigned((domain_side_length_x)/(irregular_grid_spacing))+1; // num x
-                        dimensions[1] = unsigned((domain_side_length_y)/(irregular_grid_spacing))+1; // num_y
+                        dimensions[0] = unsigned((domain_side_length_x)/(grid_spacing))+1; // num x
+                        dimensions[1] = unsigned((domain_side_length_y)/(grid_spacing))+1; // num_y
                         dimensions[2] = 1;
                         p_grid->SetDimensions(dimensions);
 
