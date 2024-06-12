@@ -1283,11 +1283,10 @@ public:
                 // If there is no convergence after all the iterations, print the error message.
                 if(idx==max_iter-1)
                 {
-                    std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << std::endl;
-                    error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver); 
+                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                     broken_solver = 1;
                     break;
-                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                 }
             }
 
@@ -1608,11 +1607,10 @@ public:
                 // If there is no convergence after all the iterations, print the error message.
                 if(idx==max_iter-1)
                 {
-                    std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << std::endl;
-                    error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver); 
+                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                     broken_solver = 1;
                     break;
-                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                 }
             }
 
@@ -2275,11 +2273,10 @@ public:
                 // If there is no convergence after all the iterations, print the error message.
                 if(idx==max_iter-1)
                 {
-                    std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << std::endl;
-                    error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver); 
+                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                     broken_solver = 1;
                     break;
-                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                 }
             }
 
@@ -2325,7 +2322,7 @@ public:
     }
 
     // Make a heterogeneous 2D hexagonal network on a PDE grid with flow and H-splitting (with a neighbourhood of units)
-    void TestHexagonalNeighbourhoodWithFlowAndHeterogeneity2D()
+    void xTestHexagonalNeighbourhoodWithFlowAndHeterogeneity2D()
     {
         // Set up the reference length for the simulation
         QLength reference_length(1.0_um);
@@ -2673,16 +2670,12 @@ public:
                             // If there is no convergence after all the iterations, print the error message.
                             if(idx==max_iter-1)
                             {
-                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << std::endl;
-                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver); 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 // broken_solver = 1;
                                 break;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                             }
-                            std::cout << "zazu " << std::endl;
-
                         }
-                        std::cout << "zazu2 " << std::endl;
 
                         // Run the simulation 
                         SimulationTime::Instance()->SetStartTime(0.0);
@@ -2877,7 +2870,7 @@ public:
 
         // p_vessel_reader = boost::shared_ptr<VesselNetworkReader<3> >(new VesselNetworkReader<3> );
         // FileFinder file_finder = FileFinder("/projects/MicrovesselChaste/test/data/bio_original.vtp", RelativeTo::ChasteSourceRoot);
-        p_vessel_reader->SetFileName("/home/narain/Desktop/detritus/zazu.vtp");
+        p_vessel_reader->SetFileName("/home/narain/Desktop/detritus/bio.vtp");
         // std::cout << file_finder.GetAbsolutePath() << std::endl;
         p_vessel_reader->SetMergeCoincidentPoints(true);
         p_vessel_reader->SetTargetSegmentLength(40.0e-6*unit::metres);
@@ -3641,9 +3634,8 @@ public:
                             }
                             if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                             {
-                                std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " and radius threshold = " << current_radius_threshold << std::endl;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " and radius threshold = " << current_radius_threshold; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
                             }
@@ -3989,9 +3981,8 @@ public:
                                 }
                                 if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                 {
-                                    std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial << std::endl;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                    error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
                                 }
@@ -4351,10 +4342,9 @@ public:
                                 }
                                 if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                 {
-                                    std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial << std::endl;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                    error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda  << " in trial = " << n_trial << " and radius threshold = " << current_radius_threshold; 
-                                    broken_trial = 1;
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
+                                    // broken_solver = 1;
                                     break;
                                 }
                             }
@@ -4695,9 +4685,8 @@ public:
                                 }
                                 if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                 {
-                                    std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial << std::endl;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                    error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
                                 }
@@ -5027,9 +5016,8 @@ public:
                             }
                             if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                             {
-                                std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << std::endl;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
                             }
@@ -6074,9 +6062,8 @@ public:
                                 
                                 if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                 {
-                                    std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << std::endl;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                    error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
                                 }
@@ -6517,9 +6504,8 @@ public:
                                 }
                                 if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                 {
-                                    std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << std::endl;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                    error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
                                 }
@@ -6924,9 +6910,8 @@ public:
                                     }
                                     if(idx==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                                     {
-                                        std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial << std::endl;
-                                        // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                                        error_log << "\n Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using n_alpha = " << n_alpha << " and lambda = " << lambda << " in trial = " << n_trial; 
+                                        std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                        error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                         broken_solver = 1;
                                         break;
                                     }
@@ -7471,11 +7456,10 @@ public:
                         // If there is no convergence after all the iterations, print the error message.
                         if(idx==max_iter-1)
                         {
-                            std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(att) << " and NHet = " << i << std::endl;
-                            error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(att) << " and NHet = " << i; 
+                            std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                            error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                             broken_solver = 1;
                             break;
-                            // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                         }
                     }
 
@@ -7857,11 +7841,10 @@ public:
                             // If there is no convergence after all the iterations, print the error message.
                             if(idx==max_iter-1)
                             {
-                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(att) << " and NHet = " << i << std::endl;
-                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(att) << " and NHet = " << i; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                             }
                         }
 
@@ -8287,11 +8270,10 @@ public:
                             // If there is no convergence after all the iterations, print the error message.
                             if(idx==max_iter-1)
                             {
-                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha << std::endl;
-                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                             }
                         }
 
@@ -8715,11 +8697,10 @@ public:
                             // If there is no convergence after all the iterations, print the error message.
                             if(idx==max_iter-1)
                             {
-                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha << std::endl;
-                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                             }
                         }
 
@@ -9145,11 +9126,10 @@ public:
                             // If there is no convergence after all the iterations, print the error message.
                             if(idx==max_iter-1)
                             {
-                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha << std::endl;
-                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha; 
+                                std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                 broken_solver = 1;
                                 break;
-                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                             }
                         }
 
@@ -10551,7 +10531,7 @@ public:
         // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
         // unsigned dimless_vessel_length = 100.0;
         QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        // double initial_haematocrit = 0.45;
+        double initial_haematocrit = 0.45;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         unsigned max_n_alpha = 3;
         unsigned n_vessels = 386;  // number of non-inlet/outlet vessels from which to select ones to make thin
@@ -10560,7 +10540,7 @@ public:
         unsigned ToBeKilled = 200;  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=1; h_solver++)
+        for (unsigned h_solver=2; h_solver<=2; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -10604,7 +10584,7 @@ public:
                     radii_array.clear();
                     // int list_index=0;
                     string line_1;
-                    std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_radius_log_normal_distribution/mu_"+to_string(alpha)+"/radii_list_"+to_string(list_number)+".txt");
+                    std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/archive/hexagonal_radius_log_normal_distribution/mu_"+to_string(alpha)+"/radii_list_"+to_string(list_number)+".txt");
                     while (std::getline(radius_list_file, line_1)) 
                     {
                         radii_array.push_back(std::vector<double>());
@@ -10621,7 +10601,7 @@ public:
                     id_array.clear();
                     // int list_index=0;
                     string line_2;
-                    std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/hexagonal_radius_log_normal_distribution/mu_"+to_string(alpha)+"/id_list_"+to_string(list_number)+".txt");
+                    std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/"+to_string(dimless_vessel_length)+"VesselLength/archive/hexagonal_radius_log_normal_distribution/mu_"+to_string(alpha)+"/id_list_"+to_string(list_number)+".txt");
                     while (std::getline(id_list_file, line_2)) 
                     {
                         id_array.push_back(std::vector<double>());
@@ -10807,7 +10787,8 @@ public:
                     // solver.SetFileName("oxygen_solution_0");
 
                     // Prune all vessels up to specified dose 
-                    for(unsigned KilledVessels=0; KilledVessels < ToBeKilled+1; KilledVessels++)
+                    // for(unsigned KilledVessels=0; KilledVessels < ToBeKilled+1; KilledVessels++)
+                    for(unsigned KilledVessels=0; KilledVessels < 1; KilledVessels++)
                     { 
                         // Display status message
                         std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
@@ -10831,12 +10812,12 @@ public:
                         unsigned broken_solver = 0;
 
                         // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
-                        // unsigned max_iter = 5;  // 1000 
-                        // double tolerance2 = 1.e-10;
+                        unsigned max_iter = 1000; 
+                        double tolerance2 = 1.e-10;
                         std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
-                        // std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
-                        // for(unsigned idx=0; idx<max_iter; idx++)
-                        // {
+                        std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
+                        for(unsigned idx=0; idx<max_iter; idx++)
+                        {
                             // Run the solvers
                             p_impedance_calculator->Calculate();
                             p_abstract_haematocrit_solver->Calculate();
@@ -10845,9 +10826,9 @@ public:
                             flow_solver.Solve();
 
                             // Get the residual
-                            // double max_difference = 0.0;
-                            // double h_for_max = 0.0;
-                            // double prev_for_max = 0.0;
+                            double max_difference = 0.0;
+                            double h_for_max = 0.0;
+                            double prev_for_max = 0.0;
                             for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
                             {
                                 // Set segments with no flow to have no haematocrit
@@ -10855,46 +10836,46 @@ public:
                                 {
                                     segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
                                 }   
-                                // double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
-                                // double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
-                                // if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
-                                // {
-                                //     max_difference = difference;
-                                //     h_for_max = current_haematocrit;
-                                //     prev_for_max = previous_haematocrit[jdx];
-                                // }
-                                // previous_haematocrit[jdx] = current_haematocrit;
+                                double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
+                                double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
+                                if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
+                                {
+                                    max_difference = difference;
+                                    h_for_max = current_haematocrit;
+                                    prev_for_max = previous_haematocrit[jdx];
+                                }
+                                previous_haematocrit[jdx] = current_haematocrit;
                             }
-                        //     std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
+                            std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
 
-                        //     // Print the final or intermediary convergence results
-                        //     if(max_difference<=tolerance2)  
-                        //     {
-                        //         std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
-                        //         broken_solver = 0;
-                        //         break;
-                        //     }
-                        //     else
-                        //     {
-                        //         if(idx%1==0)
-                        //         {
-                        //             std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
-                        //             std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
-                        //             std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
-                        //             p_network->Write(output_file);
-                        //         }
-                        //     }
+                            // Print the final or intermediary convergence results
+                            if(max_difference<=tolerance2)  
+                            {
+                                std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
+                                broken_solver = 0;
+                                break;
+                            }
+                            else
+                            {
+                                if(idx%1==0)
+                                {
+                                    std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
+                                    std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
+                                    std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
+                                    p_network->Write(output_file);
+                                }
+                            }
 
-                        //     // If there is no convergence after all the iterations, print the error message.
-                        //     if(idx==max_iter-1)
-                        //     {
-                        //         std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha << std::endl;
-                        //         error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha; 
-                        //         broken_solver = 1;
-                        //         break;
-                        //         // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
-                        //     }
-                        // }
+                            // If there is no convergence after all the iterations, print the error message.
+                            if(idx==max_iter-1)
+                            {
+                                std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha << std::endl;
+                                error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and alpha = " << alpha; 
+                                broken_solver = 1;
+                                break;
+                                // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
+                            }
+                        }
 
                         // If solver doesn't converge, move on to next one
                         if (broken_solver == 1)
@@ -13008,11 +12989,10 @@ public:
                                 // If there is no convergence after all the iterations, print the error message.
                                 if(idx==max_iter-1)
                                 {
-                                    std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and mu = " << mu << std::endl;
-                                    error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and mu = " << mu; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                                 }
                             }
 
@@ -13634,7 +13614,7 @@ public:
     }
 
     // Make a full 2D hexagonal network with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks, and kills-based pruning on the non-inlet/outlet vessels (correcting for the unexplained -50 um offset in the other simulation).
-    void xTestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2DPaper2()
+    void TestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2DPaper2()
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -13671,7 +13651,7 @@ public:
         // unsigned ToBeKilled = 2;  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=2; h_solver<=2; h_solver++)
+        for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -13702,7 +13682,7 @@ public:
             }
 
             // Loop over different thin vessel layouts
-            for(unsigned list_number=1; list_number<=1; list_number++)
+            for(unsigned list_number=1; list_number<=100; list_number++)
             {             
 
                 // Set up flag for broken solver
@@ -14004,11 +13984,10 @@ public:
                                 // If there is no convergence after all the iterations, print the error message.
                                 if(idx==max_iter-1)
                                 {
-                                    std::cout << "Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and mu = " << mu << std::endl;
-                                    error_log << "\n Problem encountered in hexagonal network with h_solver = " << to_string(h_solver) << " using selection = " << to_string(list_number) << " and mu = " << mu; 
+                                    std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                    error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
-                                    // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
                                 }
                             }
 
@@ -14585,10 +14564,8 @@ public:
                                     // If there is no convergence after all the iterations, print the error message.
                                     if(idx==max_iter-1)
                                     {
-                                        std::cout << "Problem encountered in Voronoi network, h_solver = " << h_solver << ", selection = " << layout  << ", sigma = " << sigma << ", mu = " << alpha << ", kills = " << KilledVessels << std::endl;
-                                        // error_log << "\n Problem encountered in Voronoi network with h_solver = " << to_string(h_solver) << " using layout = " << layout << " and sigma = " << sigma << to_string(layout);
-                                        error_log << "\n Problem encountered in Voronoi network, h_solver = " << h_solver << ", selection = " << layout  << ", sigma = " << sigma << ", mu = " << alpha << ", kills = " << KilledVessels;
-                                        // EXCEPTION("Did not converge after " + std::to_string(idx) + " iterations.");
+                                        std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                                        error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                         broken_solver = 1;
                                         break;
                                     }
