@@ -100,7 +100,6 @@ void PriesHaematocritSolver<DIM>::Calculate()
         linear_system.SetPcType("hypre");
         //std::cout << "We know about HYPRE\n";
         #endif //PETSC_HAVE_HYPRE
-        linear_system.SetKspType("preonly");
     }
 
     std::vector<std::vector<int> > update_indices;

@@ -92,7 +92,6 @@ void AlarconHaematocritSolver<DIM>::Calculate()
         #ifndef PETSC_HAVE_HYPRE
         linearSystem.SetPcType("hypre");
         #endif //PETSC_HAVE_HYPRE
-        linearSystem.SetKspType("preonly");
     }
 
     for(unsigned idx=0; idx<vessels.size(); idx++)

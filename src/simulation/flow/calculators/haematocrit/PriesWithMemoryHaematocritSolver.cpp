@@ -101,7 +101,6 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
         linear_system.SetPcType("hypre");
         //std::cout << "We know about HYPRE\n";
         #endif //PETSC_HAVE_HYPRE
-        linear_system.SetKspType("preonly");
     }
 
     std::vector<std::vector<int> > update_indices;
@@ -380,7 +379,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             me->SetPreference(favoured);
             me->SetDistToPrevBif(parent->GetLength());
         }
-        me->SetDistToPrevBif(parent->GetLength());
+        //me->SetDistToPrevBif(parent->GetLength());
         
         if (me->GetDistToPrevBif() != parent->GetLength())
         {

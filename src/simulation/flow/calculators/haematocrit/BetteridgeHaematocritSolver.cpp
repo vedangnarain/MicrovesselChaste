@@ -142,7 +142,6 @@ void BetteridgeHaematocritSolver<DIM>::Calculate()
         linearSystem.SetPcType("hypre");
         //std::cout << "We know about HYPRE\n";
         #endif //PETSC_HAVE_HYPRE
-        linearSystem.SetKspType("preonly");
     }
 
     std::vector<std::vector<int> > update_indices;

@@ -111,6 +111,8 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     {
         if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] < 0.1)
         {
+            // Vessels starting a x=0 are zig-zag ones which feed the first set of horizontal vessels
+            // The horizontal vessels will become the inlets.
             VesselNodePtr<2> p_inlet_node = (*vessel_iterator)->GetEndNode();
             p_network->RemoveVessel(*vessel_iterator, true);
             if (multiple_inlet_outlet || (int) p_inlet_node->rGetLocation().Convert(1_um)[1] == 212)
