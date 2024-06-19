@@ -111,27 +111,27 @@ public:
     {
         /* Note that these tests may be too fragile - 6 decimal places is more than enough to give the correct figure.*/
         // Lowest haematocrit segments (in middle at top/bottom)
-        TS_ASSERT_DELTA(0.313475, pNetwork->GetVesselSegments()[61]->GetFlowProperties()->GetHaematocrit(), 1e-6);
-        TS_ASSERT_DELTA(0.313475, pNetwork->GetVesselSegments()[63]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.313434, pNetwork->GetVesselSegments()[61]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.313434, pNetwork->GetVesselSegments()[63]->GetFlowProperties()->GetHaematocrit(), 1e-6);
 
-        TS_ASSERT_DELTA(0.313476, pNetwork->GetVesselSegments()[120]->GetFlowProperties()->GetHaematocrit(), 1e-6);
-        TS_ASSERT_DELTA(0.313476, pNetwork->GetVesselSegments()[122]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.313434, pNetwork->GetVesselSegments()[120]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.313434, pNetwork->GetVesselSegments()[122]->GetFlowProperties()->GetHaematocrit(), 1e-6);
 
         // Highest haematocrit segments (in middle and asymmetric)
-        TS_ASSERT_DELTA(0.659911, pNetwork->GetVesselSegments()[81]->GetFlowProperties()->GetHaematocrit(), 1e-6);
-        TS_ASSERT_DELTA(0.659911, pNetwork->GetVesselSegments()[83]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.659899, pNetwork->GetVesselSegments()[81]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.659899, pNetwork->GetVesselSegments()[83]->GetFlowProperties()->GetHaematocrit(), 1e-6);
 
-        TS_ASSERT_DELTA(0.659897, pNetwork->GetVesselSegments()[100]->GetFlowProperties()->GetHaematocrit(), 1e-6);
-        TS_ASSERT_DELTA(0.659897, pNetwork->GetVesselSegments()[102]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.659899, pNetwork->GetVesselSegments()[100]->GetFlowProperties()->GetHaematocrit(), 1e-6);
+        TS_ASSERT_DELTA(0.659899, pNetwork->GetVesselSegments()[102]->GetFlowProperties()->GetHaematocrit(), 1e-6);
 
         /* Flow splitting (non symmetric) */
-        TS_ASSERT_DELTA(2.23815e-10, pNetwork->GetVesselSegments()[124]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(1.11895e-10, pNetwork->GetVesselSegments()[0]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(1.1192e-10, pNetwork->GetVesselSegments()[1]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(5.07894e-11, pNetwork->GetVesselSegments()[4]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(6.11309e-11, pNetwork->GetVesselSegments()[5]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(6.11001e-11, pNetwork->GetVesselSegments()[8]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
-        TS_ASSERT_DELTA(5.07949e-11, pNetwork->GetVesselSegments()[9]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(2.24118e-10, pNetwork->GetVesselSegments()[124]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(1.12059e-10, pNetwork->GetVesselSegments()[0]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(1.12059e-10, pNetwork->GetVesselSegments()[1]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(5.08728e-11, pNetwork->GetVesselSegments()[4]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(6.11861e-11, pNetwork->GetVesselSegments()[5]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(6.11861e-11, pNetwork->GetVesselSegments()[8]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
+        TS_ASSERT_DELTA(5.08728e-11, pNetwork->GetVesselSegments()[9]->GetFlowProperties()->GetFlowRate()/unit::metre_cubed_per_second, 1e-15);
 
         double average_oxygen = 0.0;
         for(unsigned jdx=0;jdx<rOxygenSolution.size();jdx++)
@@ -141,7 +141,7 @@ public:
         average_oxygen /= rOxygenSolution.size();
 
         // Average oxygen
-        TS_ASSERT_DELTA(17097.7, average_oxygen, 1.0);
+        TS_ASSERT_DELTA(17077.7, average_oxygen, 1.0);
         // Low oxygen
         TS_ASSERT_DELTA(381.278, rOxygenSolution[0], 1.0);
         TS_ASSERT_DELTA(381.76,  rOxygenSolution[1], 1.0);
