@@ -168,7 +168,7 @@ public:
     QLength grid_spacing = 10.0_um;  // the simulation time gets quite long if you reduce the resolution further
 
     // Make a 2D hexagonal neighbourhood on a PDE grid with a homogeneous diameter assignment
-    void xTestHomogeneousHexagonalNetwork()
+    void TestHomogeneousHexagonalNetwork()
     {
         // Set up the reference length for the simulation
         QLength reference_length(1.0_um);

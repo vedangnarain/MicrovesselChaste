@@ -89,7 +89,7 @@ public:
 
 
     /**
-     * Set the artial haematocrit
+     * Set the arterial haematocrit
      * @param haematocrit the arterial haematocrit
      */
     void SetHaematocrit(QDimensionless haematocrit);

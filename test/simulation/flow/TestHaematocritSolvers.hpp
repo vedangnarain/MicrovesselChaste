@@ -1008,7 +1008,7 @@ public:
     }    
 
     // Make a 2D hexagonal network on a PDE grid with flow and H-splitting (single inlet and outlet)
-    void xTestSingleFeedHexagonalUnitWithFlow2D()
+    void TestSingleFeedHexagonalUnitWithFlow2D()
     {
         // Set up the reference length for the simulation
         QLength reference_length(1.0_um);
@@ -10508,7 +10508,7 @@ public:
     }
 
     // Make a full single-feed 2D hexagonal network with flow, H-splitting, radii set according to a log normal distribution, and kills-based pruning (correcting for the unexplained -50 um offset in the other simulation)
-    void xTestConstantOffsetSingleFeedHeterogeneousHexagonalNeighbourhoodWithIndividualPruning2D()
+    void TestConstantOffsetSingleFeedHeterogeneousHexagonalNeighbourhoodWithIndividualPruning2D()
     {
         // Initialise error log
         std::ostringstream error_log;
