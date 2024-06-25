@@ -60,7 +60,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 
 #include "PetscAndVtkSetupAndFinalize.hpp"
-#include "Debug.hpp"
+#include "RandomNumberGenerator.hpp"
+//#include "Debug.hpp"
 class TestWithOrWithourMemory2 : public CxxTest::TestSuite
 {
 
@@ -77,8 +78,7 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
 
     double inlet_haematocrit = 0.45;
-    double initial_haematocrit = 0.45;
-
+  
     // Generate the network
 
     VesselNetworkGenerator<2> network_generator;
@@ -103,12 +103,15 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
     std::shared_ptr<VesselNetwork<2> > p_network = network_generator.GenerateHexagonalNetworkEquilateral(domain_side_length_x, domain_side_length_y, main_length, false);
 
+    RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
     // identify input and output nodes and assign them properties
     bool multiple_inlet_outlet = false;
     std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
     auto vessels = p_network->GetVessels();
     for (vessel_iterator = vessels.begin(); vessel_iterator != vessels.end(); vessel_iterator++)
     {
+        assert(fabs((*vessel_iterator)->GetRadius() - 1e-5) < 1e-18);
+        (*vessel_iterator)->SetRadius(5e-6 * (1.0 + 0.1*p_gen->StandardNormalRandomDeviate()));
         if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] < 0.1)
         {
             // Vessels starting a x=0 are zig-zag ones which feed the first set of horizontal vessels
@@ -206,7 +209,7 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     double tolerance2 = 1.e-10;
 
     std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
-    std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
+    std::vector<double> previous_rbcs(segments.size(), 0.0);
     // iteration to solve the nonlinear problem follows (haematocrit problem is coupled to the flow problem via viscosity/impedance)
     for(unsigned idx=0;idx<max_iter;idx++)
     {
@@ -216,22 +219,38 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
         p_abs_haematocrit_calculator->Calculate();
         p_viscosity_calculator->Calculate();
         // Get the residual
+        double max_rbcs = 0.0;
         double max_difference = 0.0;
-        double h_for_max = 0.0;
+        double rbcs_for_max = 0.0;
         double prev_for_max = 0.0;
+        unsigned j_for_max_diff = 0;
+        unsigned j_for_max = 0;
+        
         for(unsigned jdx=0;jdx<segments.size();jdx++)
         {
-            double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();
-            double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);
+            double current_rbcs = std::abs(segments[jdx]->GetFlowProperties()->GetHaematocrit() * segments[jdx]->GetFlowProperties()->GetFlowRate());
+            if (current_rbcs > max_rbcs)
+            {
+                max_rbcs = current_rbcs;
+                j_for_max = jdx;
+            }
+
+            double difference = std::abs(current_rbcs - previous_rbcs[jdx]);
+
             if(difference>max_difference)
             {
                 max_difference = difference;
-                h_for_max = current_haematocrit;
-                prev_for_max = previous_haematocrit[jdx];
+                rbcs_for_max = current_rbcs;
+                prev_for_max = previous_rbcs[jdx];
+                j_for_max_diff = jdx;
             }
-            previous_haematocrit[jdx] = current_haematocrit;
+            previous_rbcs[jdx] = current_rbcs;
         }
-        std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
+        // Scale the difference with respect to the current maximum RBCs
+        max_difference /= max_rbcs;
+        
+        std::cout << "RBCs at max difference: " << rbcs_for_max << ", previous RBCs at max difference:" << prev_for_max << ", at: " << j_for_max_diff << std::endl;
+        std::cout << "RBCs at max: " << max_rbcs <<  ", at: " << j_for_max << std::endl;
         if(max_difference<=tolerance2)
         {
             std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
