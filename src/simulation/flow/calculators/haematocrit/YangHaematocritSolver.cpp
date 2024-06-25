@@ -155,8 +155,7 @@ void YangHaematocritSolver<DIM>::Calculate()
     //    #ifdef PETSC_HAVE_HYPRE
     //    linearSystem.SetPcType("hypre");
     //    #endif //PETSC_HAVE_HYPRE
-    //    linearSystem.SetKspType("preonly");
-   //}
+    //}
 
     // For all the vessels
     for (unsigned idx=0; idx<vessels.size(); idx++)

@@ -101,7 +101,6 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
         linear_system.SetPcType("hypre");
         //std::cout << "We know about HYPRE\n";
         #endif //PETSC_HAVE_HYPRE
-        linear_system.SetKspType("preonly");
     }
 
     std::vector<std::vector<int> > update_indices;
@@ -209,6 +208,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
 
     while(residual > tolerance && iterations < max_iterations)
     {
+                        // std::cout << "iterations" << iterations << std::endl;
+
         if(iterations>0 and update_indices.size()>0)
         {
             // Update the system
@@ -237,6 +238,9 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
         // assign haematocrit levels to vessels
         for (unsigned idx = 0; idx < vessels.size(); idx++)
         {
+                        // std::cout << "vessel" << vessels.size() << std::endl;
+                        // std::cout << "idx" << iterations << std::endl;
+
             for (unsigned jdx = 0; jdx < vessels[idx]->GetNumberOfSegments(); jdx++)
             {
                 vessels[idx]->GetSegments()[jdx]->GetFlowProperties()->SetHaematocrit(a[idx]);
@@ -373,14 +377,17 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             // Parent is an input.  We don't necessarily need to set or use the favourite
             favoured = is_a_left[updateIndices[idx][0]];
         }
+                                // std::cout << "vessel size" << vessels.size() << std::endl;
+                        std::cout << "idx" << idx << std::endl;
         //Moment of truth.  This is where we will set any unset quantities
         if (me->GetPreference() != 0 && me->GetPreference() != 1)
         {
+                std::cout << me->GetPreference() << std::endl;
             assert(me->GetPreference() == UNSIGNED_UNSET);
             me->SetPreference(favoured);
             me->SetDistToPrevBif(parent->GetLength());
         }
-        me->SetDistToPrevBif(parent->GetLength());
+        // me->SetDistToPrevBif(parent->GetLength());
         
         if (me->GetDistToPrevBif() != parent->GetLength())
         {
