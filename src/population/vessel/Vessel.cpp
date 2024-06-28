@@ -51,8 +51,8 @@ Vessel<DIM>::Vessel() : AbstractVesselNetworkComponent<DIM>(),
         mIsHalo(false),
         mHasHalo(false),
         mOtherProcessorRank(0),
-	mDistToPrevBif(0.0 * unit::metres),
-	mPreference(3),
+	mDistToPrevBif(DOUBLE_UNSET * unit::metres),
+	mPreference(UNSIGNED_UNSET),
 	mLengthFromMatrix(0.0 * unit::metres),
 	mAlive(true)
 {
@@ -72,8 +72,8 @@ Vessel<DIM>::Vessel(std::shared_ptr<VesselSegment<DIM> > pSegment) : AbstractVes
         mIsHalo(false),
         mHasHalo(false),
         mOtherProcessorRank(0),
-	mDistToPrevBif(0.0 * unit::metres),
-	mPreference(3),
+	mDistToPrevBif(DOUBLE_UNSET * unit::metres),
+	mPreference(UNSIGNED_UNSET),
 	mLengthFromMatrix(0.0 * unit::metres),
 	mAlive(true)
 {
@@ -93,8 +93,8 @@ Vessel<DIM>::Vessel(std::vector<std::shared_ptr<VesselSegment<DIM> > > segments)
         mIsHalo(false),
         mHasHalo(false),
         mOtherProcessorRank(0),
-	mDistToPrevBif(0.0 * unit::metres),
-	mPreference(3),
+	mDistToPrevBif(DOUBLE_UNSET * unit::metres),
+	mPreference(UNSIGNED_UNSET),
 	mLengthFromMatrix(0.0 * unit::metres),
 	mAlive(true)
 {
@@ -138,8 +138,8 @@ Vessel<DIM>::Vessel(std::vector<std::shared_ptr<VesselNode<DIM> > > nodes) :
         mIsHalo(false),
         mHasHalo(false),
         mOtherProcessorRank(0),
-	mDistToPrevBif(0.0 * unit::metres),
-	mPreference(3),
+	mDistToPrevBif(DOUBLE_UNSET * unit::metres),
+	mPreference(UNSIGNED_UNSET),
 	mLengthFromMatrix(0.0 * unit::metres),
 	mAlive(true)
 {
@@ -170,8 +170,8 @@ Vessel<DIM>::Vessel(std::shared_ptr<VesselNode<DIM> > pStartNode, std::shared_pt
              mIsHalo(false),
              mHasHalo(false),
              mOtherProcessorRank(0),
-	     mDistToPrevBif(0.0 * unit::metres),
-	     mPreference(3),
+	     mDistToPrevBif(DOUBLE_UNSET * unit::metres),
+	     mPreference(UNSIGNED_UNSET),
 	     mLengthFromMatrix(1000.0 * unit::metres),
 	     mAlive(true)
 {

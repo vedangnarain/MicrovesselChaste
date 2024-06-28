@@ -112,6 +112,7 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     {
         assert(fabs((*vessel_iterator)->GetRadius() - 1e-5) < 1e-18);
         (*vessel_iterator)->SetRadius(5e-6 * (1.0 + 0.1*p_gen->StandardNormalRandomDeviate()));
+        // (*vessel_iterator)->SetRadius(10.0_um);
         if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] < 0.1)
         {
             // Vessels starting a x=0 are zig-zag ones which feed the first set of horizontal vessels
