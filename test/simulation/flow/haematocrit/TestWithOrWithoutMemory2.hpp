@@ -103,16 +103,16 @@ void RunHoneyCombWithOrWithoutMemoryEffects(bool withMemory)
     auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
     std::shared_ptr<VesselNetwork<2> > p_network = network_generator.GenerateHexagonalNetworkEquilateral(domain_side_length_x, domain_side_length_y, main_length, false);
 
-    RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
+    // RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
     // identify input and output nodes and assign them properties
-    bool multiple_inlet_outlet = false;
+    bool multiple_inlet_outlet = true;
     std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
     auto vessels = p_network->GetVessels();
     for (vessel_iterator = vessels.begin(); vessel_iterator != vessels.end(); vessel_iterator++)
     {
         assert(fabs((*vessel_iterator)->GetRadius() - 1e-5) < 1e-18);
-        (*vessel_iterator)->SetRadius(5e-6 * (1.0 + 0.1*p_gen->StandardNormalRandomDeviate()));
-        // (*vessel_iterator)->SetRadius(10.0_um);
+        // (*vessel_iterator)->SetRadius(5e-6 * (1.0 + 0.1*p_gen->StandardNormalRandomDeviate()));
+        (*vessel_iterator)->SetRadius(10.0_um);
         if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] < 0.1)
         {
             // Vessels starting a x=0 are zig-zag ones which feed the first set of horizontal vessels

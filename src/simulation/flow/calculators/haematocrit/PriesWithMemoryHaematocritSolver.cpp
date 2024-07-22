@@ -410,10 +410,10 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
 
     double cfl_term = 1000.0;   // this corresponds to A^{shift} \times f(l;D_P) in our paper, and should be changed to something reasonable for all vessels in this process
     // double omega = 2.0;
-    double omega = 4.0;  // original value
+    // double omega = 4.0;  // original value
     // double omega = 8.0;
     // double omega = 16.0;
-    // double omega = 28.0;  // optimal value based on optimisation algorithm for microfluidics experiments (Hyakutake et al., 2021)
+    double omega = 28.0;  // optimal value based on optimisation algorithm for microfluidics experiments (Hyakutake et al., 2021)
     // double omega = 32.0;
     // double omega = 64.0;
     // double omega = 128.0;
