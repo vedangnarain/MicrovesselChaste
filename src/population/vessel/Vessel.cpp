@@ -576,7 +576,8 @@ std::map<std::string, double> Vessel<DIM>::GetOutputData()
     this->mOutputData["Vessel Has Halo"] = this->HasHalo();
     this->mOutputData["Vessel Distance To Previous Bifurcation"] = this->GetDistToPrevBif();
     this->mOutputData["Vessel Preference For Haematocrit"] = this->GetPreference();
-    this->mOutputData["Vessel Length (From Matrix)"] = this->GetLengthFromMatrix();
+    // this->mOutputData["Vessel Length (From Matrix)"] = this->GetLengthFromMatrix();
+    this->mOutputData["Vessel Length"] = this->GetLength();
     return this->mOutputData;
 }
 

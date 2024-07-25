@@ -1,0 +1,23 @@
+A=[0 0.173177 
+5.9758e-06 0.150131 
+1.19516e-05 0.0626667 
+1.79274e-05 0.0593103 
+2.39032e-05 0.0551627 
+2.9879e-05 0.0564399 
+3.58548e-05 0.00446429 
+4.18306e-05 0.00460829 
+4.78064e-05 0.00483871 
+5.37822e-05 0.00508475 
+5.9758e-05 0.00535714 
+6.57338e-05 0.0056926 
+7.17096e-05 0 
+7.76854e-05 0 
+8.36612e-05 0]
+
+LengthThreshold=10^6*A(:,1) % to microns
+Perfusion=A(:,2)
+
+plot(LengthThreshold,Perfusion,'Linewidth',3)
+xlabel('Length threshold in microns')
+ylabel('Perfusion quotient')
+title('Inlet length is 298.79 microns')

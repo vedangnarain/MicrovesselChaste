@@ -12627,10 +12627,10 @@ public:
                         for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
                         {                           
                             // // Exclude inlets and outlets
-                            if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                            && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                            && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                            && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                            if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                             {
                                 // Get the current segment's radius
                                 QLength current_radius = vessels[vessel_index]->GetRadius();
@@ -13082,10 +13082,10 @@ public:
                             for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
                             {                            
                                 // // Exclude inlets and outlets
-                                // if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                                // if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                                 // {
                                     // Get the current segment's radius
                                     QLength current_radius = vessels[vessel_index]->GetRadius();
@@ -13572,10 +13572,10 @@ public:
                             for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
                             {                            
                                 // // Exclude inlets and outlets
-                                // if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                                // if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                                 // {
                                     // Get the current segment's radius
                                     QLength current_radius = vessels[vessel_index]->GetRadius();
@@ -14091,10 +14091,10 @@ public:
                             for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
                             {                            
                                 // // Exclude inlets and outlets
-                                // if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                                // if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                                 // {
                                     // Get the current segment's radius
                                     QLength current_radius = vessels[vessel_index]->GetRadius();
@@ -14134,9 +14134,8 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-
-    // Make a full 2D hexagonal network with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks
-    void TestMantegazzaMicrofluidicsNetworkPaper2()
+    // Make a digital twin of the Manetgazza network 
+    void xTestMantegazzaMicrofluidicsNetworkPaper2()
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -14204,7 +14203,7 @@ public:
 
             // Loop over different thin vessel layouts
             for(unsigned list_number=1; list_number<=1; list_number++)
-            {             
+            {
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
 
@@ -14593,10 +14592,10 @@ public:
                             // for(unsigned vessel_index=1; vessel_index<vessels.size(); vessel_index++)  // for all the non-inlet/outlet segments in the network
                             // {                            
                             //     // // Exclude inlets and outlets
-                            //     // if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                            //     // && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                            //     // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                            //     // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                                // if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                             //     // {
                             //         // Get the current segment's radius
                             //         QLength current_radius = vessels[vessel_index]->GetRadius();
@@ -14636,11 +14635,7 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-
-
-
-
-    // Make a full 2D hexagonal network with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks, and kills-based pruning on the non-inlet/outlet vessels (correcting for the unexplained -50 um offset in the other simulation).
+    // Make a Manetgazza network and prune it
     void TestMantegazzaNetworkWithIndividualPruning2DPaper2()
     {
         // Initialise error log
@@ -14669,6 +14664,8 @@ public:
         // QLength inlet_vessel_radius = 100.0_um;  // the maximum radius of the distribution
         QLength inlet_vessel_radius = 7.5_um;  // equals a hydraulic diameter of 15 um
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
+        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        // double initial_haematocrit = 0.45;        
         double initial_haematocrit = 0.10;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 407;  // number of vessels from which to select ones to make thin
@@ -14707,7 +14704,11 @@ public:
                 }
             }
 
-            // Loop over different thin vessel layouts
+            // Loop over different diameter assignments
+            // std::vector<unsigned> broken_selections = {26, 28, 29, 57, 61, 73, 75, 84, 91};
+            // std::vector<unsigned> broken_selections = {99};
+            unsigned seed_number = 42;  // which seed to use for the random number generator for the diameter lists            
+            // for (unsigned list_number : broken_selections)
             for(unsigned list_number=1; list_number<=selections; list_number++)
             {             
                 // Set up flag for broken solver
@@ -14732,7 +14733,7 @@ public:
                         radii_array.clear();
                         // int list_index=0;
                         string line_1;
-                        std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/hexagonal_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+mu+"/radii_list_"+to_string(list_number)+".txt");
+                        std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/seed_"+to_string(seed_number) + "_hexagonal_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+mu+"/radii_list_"+to_string(list_number)+".txt");
                         while (std::getline(radius_list_file, line_1)) 
                         {
                             radii_array.push_back(std::vector<double>());
@@ -14749,7 +14750,7 @@ public:
                         id_array.clear();
                         // int list_index=0;
                         string line_2;
-                        std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/hexagonal_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+mu+"/id_list_"+to_string(list_number)+".txt");
+                        std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/seed_"+to_string(seed_number) + "_hexagonal_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+mu+"/id_list_"+to_string(list_number)+".txt");
                         while (std::getline(id_list_file, line_2)) 
                         {
                             id_array.push_back(std::vector<double>());
@@ -14989,6 +14990,13 @@ public:
                                 double prev_for_max = 0.0;
                                 for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
                                 {
+                                    // Set segments with no flow to be dead (this is only problem for inlet really)
+                                    if (fabs(segments[jdx]->GetFlowProperties()->GetFlowRate()) <= 1.e-16 *unit::metre_cubed_per_second)
+                                    {
+                                        segments[jdx]->GetFlowProperties()->SetViscosity(0.0);
+                                        segments[jdx]->GetFlowProperties()->SetImpedance(0.0);
+                                        segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
+                                    }                                       
                                     double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
                                     double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
                                     if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
@@ -15095,14 +15103,14 @@ public:
                             vessels = p_network->GetVessels();
                             QLength minimum_radius = 1000.0_um;
                             unsigned int minimum_index = 0;
-                            for(unsigned vessel_index=1; vessel_index<vessels.size(); vessel_index++)  // for all the non-inlet/outlet segments in the network
+                            for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the non-inlet/outlet segments in the network
                             {                            
                                 // // Exclude inlets and outlets
-                                // if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                                // && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
-                                // {
+                                if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                                {
                                     // Get the current segment's radius
                                     QLength current_radius = vessels[vessel_index]->GetRadius();
 
@@ -15112,7 +15120,7 @@ public:
                                         minimum_radius = current_radius;
                                         minimum_index = vessel_index;
                                     }     
-                                // }
+                                }
                             }
                             p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel            
                             
@@ -15141,17 +15149,6 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-
-
-
-
-
-
-
-
-
-
-
     // // Print the execution time
     // printf("Time taken: %.2fs\n", (double)(clock() - clkStart)/CLOCKS_PER_SEC);
 
@@ -15161,7 +15158,7 @@ public:
 
     // Choose key parameters
     unsigned NumberOfSeedPoints = 25;  // change this to select which Voronoi architecture to use: 25, 100, 400
-    unsigned NumberOfLayouts = 10;  // number of different point layouts to run simulations with (add an extra selection for a demo)
+    unsigned NumberOfLayouts = 100;  // number of different point layouts to run simulations with (add an extra selection for a demo)
 
 	// unsigned selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
     // unsigned NHet = 5;  // number of heterogeneity selections (upto 5)
@@ -15711,7 +15708,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -15735,13 +15732,15 @@ public:
         // Define the key parameters
         // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
         // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
-        QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        double initial_haematocrit = 0.45;
+        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
+        // double initial_haematocrit = 0.45;        
+        double initial_haematocrit = 0.10;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
         // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
-        unsigned ToBeKilled = 1.7*NumberOfSeedPoints;  // number to kill
+        unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
         // unsigned ToBeKilled = 100;  // number to kill
 
@@ -15761,6 +15760,9 @@ public:
             double PerfusionQuotient;
 
             // Run simulations with different layouts (could be used to compute some average later)
+            // std::vector<unsigned> broken_selections = {2, 9, 11, 49, 69, 80, 93, 99};
+            // std::vector<unsigned> broken_selections = {99};
+            // for (unsigned list_number : broken_selections)
             for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
             { 
                 // Set up flag for broken solver
@@ -15784,10 +15786,10 @@ public:
                 }
 
                 // Loop over increasing level of heteregeneity 
-                for(unsigned n_sigma=0; n_sigma<=max_n_sigma; n_sigma++)
+                for(unsigned n_sigma=0; n_sigma<=0; n_sigma++)
                 {
                     // Loop over increasing level of mean diameter 
-                    for(unsigned n_mu=0; n_mu<=max_n_mu; n_mu++)
+                    for(unsigned n_mu=0; n_mu<=0; n_mu++)
                     {
                         // // Convert to actual mu
                         // int mu = (3*n_mu)+10;  // alpha determines the mean
@@ -15826,10 +15828,7 @@ public:
                         std::shared_ptr<VesselNetwork<2> > p_network = network_generator.GenerateVoronoiNetwork(rEdgesMatrix);
 
                         // Set inlet and outlet nodes (if node (start/end) is at the edge of the domain space, make it input or output depending on which side), and assign each vessel a radius from the list  
-
-                        // auto p_segment = p_network->GetVesselSegments()[0];
-                        // p_segment->SetRadius(inlet_vessel_radius);
-                        // VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
+                        auto p_segment = p_network->GetVesselSegments()[0];
                         vessels = p_network->GetVessels();
 
                         for (vessel_iterator = vessels.begin(); vessel_iterator != vessels.end(); vessel_iterator++)
@@ -15877,9 +15876,9 @@ public:
                         vessels = p_network->GetVessels();
 
                         // Remove diameter heterogeneity
-                        // p_segment = p_network->GetVesselSegments()[0];
-                        // p_segment->SetRadius(100.0_um);
-                        // VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
+                        p_segment = p_network->GetVesselSegments()[0];
+                        p_segment->SetRadius(7.5_um);
+                        VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
 
                         // Set the haematocrit solver
                         std::shared_ptr<AbstractHaematocritSolver<2>> p_abstract_haematocrit_solver;
@@ -16032,11 +16031,13 @@ public:
                             // solver.SetFileName("oxygen_solution_0");
 
                             // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
+                            unsigned max_max_iter = 10000; 
                             unsigned max_iter = 1000;  // 1000 
+                            double prev_max_difference = 0.0;
                             double tolerance2 = 1.e-10;
                             std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
                             std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
-                            for(unsigned idx=0;idx<max_iter;idx++)
+                            for(unsigned idx=0;idx<max_max_iter;idx++)
                             {
                                 // Run the solvers (order of calculators matters!)
                                 p_viscosity_calculator->Calculate();
@@ -16051,12 +16052,13 @@ public:
                                 double prev_for_max = 0.0;
                                 for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
                                 {
-                                    // Set segments with no flow to have no haematocrit
-                                    // if (fabs(segments[jdx]->GetFlowProperties()->GetFlowRate()) <= 1.e-16 *unit::metre_cubed_per_second)
-                                    // {
-                                    //     segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
-                                    // }   
-                                    
+                                    // Set segments with no flow to be dead (this is only problem for inlet really)
+                                    if (fabs(segments[jdx]->GetFlowProperties()->GetFlowRate()) <= 1.e-16 *unit::metre_cubed_per_second)
+                                    {
+                                        segments[jdx]->GetFlowProperties()->SetViscosity(0.0);
+                                        segments[jdx]->GetFlowProperties()->SetImpedance(0.0);
+                                        segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
+                                    }    
                                     double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
                                     double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
                                     if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
@@ -16078,9 +16080,9 @@ public:
                                 }
                                 else
                                 {
-                                    if(idx%1==0)
+                                    std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
+                                    if(idx%100==0)
                                     {
-                                        std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
                                         std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
                                         std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
                                         p_network->Write(output_file);
@@ -16088,13 +16090,21 @@ public:
                                 }
 
                                 // If there is no convergence after all the iterations, print the error message.
-                                if(idx==max_iter-1)
+                                // if(idx==max_iter-1)
+                                                                // std::cout << prev_max_difference << max_difference << std::endl;
+
+                                if(idx>=max_iter-1 && max_difference >= prev_max_difference)
                                 {
                                     std::cout << "Problem encountered in " << str_directory_name << std::endl;
                                     error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
                                     broken_solver = 1;
                                     break;
-                                }
+                                }                                
+                                // std::cout << prev_max_difference << max_difference << std::endl;
+
+                                prev_max_difference = max_difference;
+                                // std::cout << prev_max_difference << max_difference << std::endl;
+
                             }
 
                             // If simulation doesn't converge, move on to next layout and log problem 
@@ -16162,25 +16172,50 @@ public:
                             outfile << network_name << " " << solver_name << " " << selection_string << " " << sd_string << " " << mean_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                             outfile.close();
 
-                            // Remove the smallest vessel
+                            // // Remove the thinnest vessel
+                            // vessels = p_network->GetVessels();
+                            // QLength minimum_radius = 1000.0_um;
+                            // unsigned int minimum_index = 0;
+                            // for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
+                            // {
+                            //     // Exclude inlets and outlets
+                            //     if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                            //     || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                            //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                            //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                            //     {   
+                                    // // Get the current segment's radius
+                                    // QLength current_radius = vessels[vessel_index]->GetRadius();
+                                    
+                            //         // If the current radius is less than the minimum radius, record the new minimum
+                            //         if (current_radius < minimum_radius)
+                            //         {
+                            //             minimum_radius = current_radius;
+                            //             minimum_index = vessel_index;
+                            //         }                  
+                            //     }
+                            // }
+                            // p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
+
+                            // Remove the shortest vessel
                             vessels = p_network->GetVessels();
-                            QLength minimum_radius = 1000.0_um;
+                            QLength minimum_length = 1000.0_um;
                             unsigned int minimum_index = 0;
                             for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
                             {
                                 // Exclude inlets and outlets
-                                if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()==0
-                                && vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()==0
-                                && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()==0
-                                && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()==0)
+                                if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
                                 {   
-                                    // Get the current segment's radius
-                                    QLength current_radius = vessels[vessel_index]->GetRadius();
-
-                                    // If the current radius is less than the minimum radius, record the new minimum
-                                    if (current_radius < minimum_radius)
+                                    // Get the current segment's length
+                                    QLength current_length = vessels[vessel_index]->GetLength();
+                                    
+                                    // If the current length is less than the minimum length, record the new minimum
+                                    if (current_length < minimum_length)
                                     {
-                                        minimum_radius = current_radius;
+                                        minimum_length = current_length;
                                         minimum_index = vessel_index;
                                     }                  
                                 }

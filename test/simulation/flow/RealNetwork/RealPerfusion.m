@@ -1,0 +1,19 @@
+A=[0 0.173177 
+8.3555e-07 0.173177 
+1.6711e-06 0.173177 
+2.50665e-06 0.173177 
+3.3422e-06 0.173177 
+4.17775e-06 0.173177 
+5.0133e-06 0.173629 
+5.84885e-06 0.174541 
+6.6844e-06 0.176471 
+7.51995e-06 0.179916 
+8.3555e-06 0.187592 
+9.19105e-06 0]
+
+RadiusThreshold=10^6*A(:,1) % to microns
+Perfusion=A(:,2)
+
+plot(RadiusThreshold,Perfusion,'Linewidth',3)
+xlabel('Radius threshold in microns')
+ylabel('Perfusion quotient')
