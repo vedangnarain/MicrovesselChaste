@@ -245,9 +245,9 @@ void PriesHaematocritSolver<DIM>::Calculate()
         }
 
         iterations++;
-        std::cout<< Reflect() <<": iteration = "<<iterations<<"\t";
-        std::cout<<"residual = "<<residual<<"\t";
-        std::cout<<"max unconserved RBCs = "<<this->CheckSolution()<<"\n";
+        //std::cout<< Reflect() <<": iteration = "<<iterations<<"\t";
+        //std::cout<<"residual = "<<residual<<"\t";
+        //std::cout<<"max unconserved RBCs = "<<this->CheckSolution()<<"\n";
         if(iterations == max_iterations)
         {
             if(mExceptionOnFailedConverge)
@@ -286,12 +286,6 @@ void PriesHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Vessel<DIM> 
     double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
     double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
 
-    // Print X0 if it is not a positive value
-    // if (X0 <= 0.0)
-    // {
-    //     std::cout << "X0 = " << X0 << std::endl;
-    // }
-    
     QFlowRate modified_flow_ratio_num = Qabs(my_flow_rate)-X0*Qabs(parent_flow_rate);
     QFlowRate modified_flow_ratio_den = Qabs(competitor_flow_rate)-X0*Qabs(parent_flow_rate);
     if (modified_flow_ratio_num <= 0)

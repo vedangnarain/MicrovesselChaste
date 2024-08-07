@@ -243,9 +243,9 @@ void PriesWithMemoryHaematocritSolver<DIM>::Calculate()
         }
 
         iterations++;
-        std::cout<< Reflect() <<": iteration = "<<iterations<<"\t";
-        std::cout<<"residual = "<<residual<<"\t";
-        std::cout<<"max unconserved RBCs = "<<this->CheckSolution()<<"\n";
+        //std::cout<< Reflect() <<": iteration = "<<iterations<<"\t";
+        //std::cout<<"residual = "<<residual<<"\t";
+        //std::cout<<"max unconserved RBCs = "<<this->CheckSolution()<<"\n";
         if(iterations == max_iterations)
         {
             if(mExceptionOnFailedConverge)
@@ -362,7 +362,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
         std::shared_ptr<Vessel<DIM> > me = vessels[updateIndices[idx][0]];
         std::shared_ptr<Vessel<DIM> > parent = vessels[updateIndices[idx][1]];
         bool favoured;
-        //On most bifurcationa the parent also had a bifurcation which it is recovering from
+        //On most bifurcations the parent also had a bifurcation which it is recovering from
         if (direction_set[updateIndices[idx][1]])
         {
             favoured = is_a_left[updateIndices[idx][1]] ^ is_a_left[updateIndices[idx][0]];
@@ -379,13 +379,29 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             me->SetPreference(favoured);
             me->SetDistToPrevBif(parent->GetLength());
         }
-        // me->SetDistToPrevBif(parent->GetLength());
+        //me->SetDistToPrevBif(parent->GetLength());
         
-        if (me->GetDistToPrevBif() != parent->GetLength())
+        // If there was a "GetDistToPrevBif" set, then check if it was correct
+        // (Relative floating point comparison because the length may have been calculated slightly differently.)
+        double length_difference_relative = (me->GetDistToPrevBif() - parent->GetLength())/parent->GetLength();
+        if (fabs(length_difference_relative) > 1e-14)
         {
-            WARN_ONCE_ONLY("Set distance to previous bifurcation does not match actual distance");
+            WARNING("Set distance to previous bifurcation does not match actual distance");
         }
-        //PRINT_2_VARIABLES(updateIndices[idx][0], favoured);
+        if (direction_set[updateIndices[idx][1]] == false)
+        {
+            assert( is_a_left[updateIndices[idx][1]] == false);
+            /* The parent is not directly downstream of a bifurcation, so the memory rule makes
+             * no sense.  There should be no favoured direction.  We can ensure that this happens
+             * by pretending that that parent vessel is longer than CFL recovery length.
+             * Making the length 200 times longer than the radius ensures the memory effect
+             * is indistiguishable from Pries to 6 significant figures.
+             */
+
+            me->SetDistToPrevBif(200.0*parent->GetRadius());
+            //WARNING("About to set favourable branch assuming that parent comes from right turn");
+        }
+
     }
 }
 
