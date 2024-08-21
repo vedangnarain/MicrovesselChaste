@@ -184,7 +184,7 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 #include "CaBasedCellPopulation.hpp"
 #include "ApoptoticCellKiller.hpp"
 #include "SimpleOxygenBasedCellCycleModel.hpp"
-// #include "StemCellProliferativeType.hpp"
+#include "StemCellProliferativeType.hpp"
 
 // Forces
 #include "GeneralisedLinearSpringForce.hpp"
@@ -214,7 +214,7 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Tests
+// Tests with cells
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Tests with cells
@@ -688,17 +688,35 @@ public:
         std::ostringstream error_log;
         error_log << "\n The following simulations failed to converge: \n";
 
-        // Seed the random number generator
-        RandomNumberGenerator::Instance()->Reseed(12345);
-
-        // Choose key parameters
-        unsigned NumberOfSeedPoints = 60;  // change this to select which Voronoi architecture to use: 25, 100, 400
-        // unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
-
         // Set network in filename
         std::string network_name = "TestVoronoiNetworkTissue/";
 
-        // Create the output file for the PQs
+        // Choose the vascular parameters
+        unsigned NumberOfSeedPoints = 60;  // change this to select which Voronoi architecture to use: 25, 100, 400
+        // unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
+        double dimless_domain_size_x = 1105.0; 
+        double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as Mantegazza network
+        // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
+        // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
+        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
+        // double initial_haematocrit = 0.45;        
+        double initial_haematocrit = 0.01;  // conks out somewhere between 0.35 and 0.4
+        double tolerance = 0.001;  // for location of inlet/outlet nodes
+        // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
+        // double percToKill = 0.2;  // percentage of vessels to kill
+        // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
+        // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
+        // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
+        unsigned ToBeKilled = 0;  // number to kill
+        
+        // Match this based on cell size
+        QLength cell_grid_spacing = 40.0_um;  // the simulation time gets quite long if you reduce the resolution further
+
+        // Seed the random number generator
+        RandomNumberGenerator::Instance()->Reseed(12345);
+
+        // Create the log file for broken simulations
         std::ofstream broken_layouts_file;
         broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
         broken_layouts_file.close();        
@@ -707,31 +725,15 @@ public:
         QLength reference_length(1.0_um);
         BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
         // BaseUnits::Instance()->SetReferenceTimeScale(1_h);
-        QTime reference_time = 3600.0*unit::seconds;
+        QTime reference_time = 3600.0*unit::seconds;  // 1 hour
         BaseUnits::Instance()->SetReferenceTimeScale(reference_time);
 
-        // Match this based on cell size
-        QLength cell_grid_spacing = 10.0_um;  // the simulation time gets quite long if you reduce the resolution further
-
-        // Define the key parameters
-        double dimless_domain_size_x = 1105.0; 
-        double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as Mantegazza network
-        // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
-        // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
-        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
-        // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.10;
-        double tolerance = 0.001;  // for location of inlet/outlet nodes
-        // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
-        // double percToKill = 0.2;  // percentage of vessels to kill
-        // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
-        // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
-        // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
-        unsigned ToBeKilled = 0;  // number to kill
+        ////////////////////////////////////////////////////////////////
+        // Vasculature
+        ////////////////////////////////////////////////////////////////
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -750,9 +752,8 @@ public:
             // std::vector<unsigned> broken_selections = {99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=31;layout <= 31; layout++)   
+            for (unsigned layout=424;layout <= 424; layout++)   
             { 
-
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
                 
@@ -867,38 +868,37 @@ public:
                 VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
                 
                 // Prune all vessels up to specified dose 
-                for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
-                { 
-
- // Display status message
-                    std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
-
-
-                    // Remove the shortest vessel
-                    vessels = p_network->GetVessels();
-                    QLength minimum_length = 1000.0_um;
-                    unsigned int minimum_index = 0;
-                    for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
-                    {
-                        // Exclude inlets and outlets
-                        if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
-                        || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
-                        || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
-                        || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
-                        {   
-                            // Get the current segment's length
-                            QLength current_length = vessels[vessel_index]->GetLength();
+                // for(unsigned KilledVessels=0; KilledVessels < ToBeKilled; KilledVessels++)
+                // { 
+                //     // Remove the shortest vessel
+                //     vessels = p_network->GetVessels();
+                //     QLength minimum_length = 1000.0_um;
+                //     unsigned int minimum_index = 0;
+                //     for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
+                //     {
+                //         // Exclude inlets and outlets
+                //         if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                //         || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                //         || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                //         || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                //         {   
+                //             // Get the current segment's length
+                //             QLength current_length = vessels[vessel_index]->GetLength();
                             
-                            // If the current length is less than the minimum length, record the new minimum
-                            if (current_length < minimum_length)
-                            {
-                                minimum_length = current_length;
-                                minimum_index = vessel_index;
-                            }                  
-                        }
-                    }
-                    p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
-                }                       
+                //             // If the current length is less than the minimum length, record the new minimum
+                //             if (current_length < minimum_length)
+                //             {
+                //                 minimum_length = current_length;
+                //                 minimum_index = vessel_index;
+                //             }                  
+                //         }
+                //     }
+                //     p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
+                    
+                //     // Display status message
+                //     std::cout << "Now killed " << KilledVessels+1 << " vessels." << std::endl;  
+
+                // }                       
 
                 // Set the haematocrit solver
                 std::shared_ptr<AbstractHaematocritSolver<2>> p_abstract_haematocrit_solver;
@@ -992,11 +992,10 @@ public:
                     // Set up the cell populations
                     std::shared_ptr<GridCalculator<2> > p_grid_calc = GridCalculator<2>::Create();
                     p_grid_calc->SetGrid(p_grid);
-                
                     std::shared_ptr<Owen11CellPopulationGenerator<2> > p_cell_population_genenerator = Owen11CellPopulationGenerator<2>::Create();
                     p_cell_population_genenerator->SetGridCalculator(p_grid_calc);
                     p_cell_population_genenerator->SetVesselNetwork(p_network);
-                    QLength tumour_radius(500.0 * unit::microns);
+                    QLength tumour_radius(10000.0 * unit::microns);  // just make it bigger than the domain to ensure all cells are tumour cells 
                     p_cell_population_genenerator->SetTumourRadius(tumour_radius);
                     std::shared_ptr<CaBasedCellPopulation<2> > p_cell_population = p_cell_population_genenerator->Update();
 
@@ -1027,13 +1026,13 @@ public:
                     p_oxygen_solver->SetGrid(p_grid);
                     // solver.SetFileName("oxygen_solution_0");
 
-                    // Set up the VEGF PDE as the O2 one
+                    // Set up the VEGF PDE as we set the O2 one (currently turned off)
                     auto p_vegf_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
                     p_vegf_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpVegfDiffusivity->GetValue("User"));
                     // p_vegf_pde->SetIsotropicDiffusionConstant(0.0);
                     p_vegf_pde->SetContinuumLinearInUTerm(-Owen11Parameters::mpVegfDecayRate->GetValue("User"));
                 
-                    // Set up a map for different release rates depending on cell type. Also include a threshold intracellular VEGF below which there is no release.
+                    // Set up a map for different release rates depending on cell type. Also include a threshold intracellular VEGF below which there is no release (currently turned off)
                     auto p_normal_and_quiescent_cell_source = CellStateDependentDiscreteSource<2>::Create();  // initialise the source (which combines normal and quiescent cells)
                     std::map<unsigned, QConcentrationFlowRate > normal_and_quiescent_cell_rates;  // map to store secretion rates
                     std::map<unsigned, QConcentration > normal_and_quiescent_cell_rate_thresholds;  // map to store secretion thresholds
@@ -1052,7 +1051,15 @@ public:
                     p_normal_and_quiescent_cell_source->SetStateRateThresholdMap(normal_and_quiescent_cell_rate_thresholds);
                     // p_vegf_pde->AddDiscreteSource(p_normal_and_quiescent_cell_source);
 
-                    // Add a vessel related VEGF sink
+                    // Print the cell types and their colours
+                    MAKE_PTR(CancerCellMutationState, p_cancer_state);
+                    // MAKE_PTR(StemCellProliferativeType, p_stem_state);
+                    std::cout << "Normal state has Legacy Cell type " <<  p_normal_cell_state->GetColour() << std::endl;
+                    std::cout << "Cancer state has Legacy Cell type " <<  p_cancer_state->GetColour() << std::endl;
+                    std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_quiescent_cancer_state->GetColour() << std::endl;
+                    // std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_stem_state->GetColour() << std::endl;
+
+                    // Add a vessel related VEGF sink (currently turned off)
                     auto p_vessel_vegf_sink = VesselBasedDiscreteSource<2>::Create();
                     p_vessel_vegf_sink->SetReferenceConcentration(0.0_M);
                     p_vessel_vegf_sink->SetVesselPermeability(Owen11Parameters::mpVesselVegfPermeability->GetValue("User"));
@@ -1174,37 +1181,41 @@ public:
                     update_labels.push_back("oxygen");
                     p_microvessel_modifier->SetCellDataUpdateLabels(update_labels);
 
+                    ////////////////////////////////////////////////////////////////
+                    // Cells
+                    ////////////////////////////////////////////////////////////////
+
                     // The full simulation is run as a typical Cell Based Chaste simulation
                     OnLatticeSimulation<2> simulator(*p_cell_population);
                     simulator.AddSimulationModifier(p_microvessel_modifier);
 
-                    // Add a killer to remove apoptotic cells (leave it commented so RT is the only killer)
-                    // boost::shared_ptr<ApoptoticCellKiller<2> > p_apoptotic_cell_killer(new ApoptoticCellKiller<2>(p_cell_population.get())); (leave it commented so RT is the only killer)
-                    // simulator.AddCellKiller(p_apoptotic_cell_killer);
+                    // Add a killer to remove apoptotic cells from the grid
+                    boost::shared_ptr<ApoptoticCellKiller<2> > p_apoptotic_cell_killer(new ApoptoticCellKiller<2>(p_cell_population.get()));
+                    simulator.AddCellKiller(p_apoptotic_cell_killer);
         
                     // Add a LQ RT killer
                     boost::shared_ptr<LQRadiotherapyCellKiller<2> > p_rt_killer =
                     boost::shared_ptr<LQRadiotherapyCellKiller<2> >(new LQRadiotherapyCellKiller<2> (p_cell_population.get()));
-                    p_rt_killer->SetAlphaMax(0.3*unit::per_gray);
-                    p_rt_killer->SetBetaMax(0.03*unit::per_gray_squared);
-                    p_rt_killer->SetDoseInjected(2.0*unit::gray);
-                    p_rt_killer->SetCancerousRadiosensitivity(0.3 * unit::per_gray, 0.03 * unit::per_gray_squared);
-                    p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);
+                    p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
+                    // p_rt_killer->SetCancerousRadiosensitivity(0.3 * unit::per_gray, 0.03 * unit::per_gray_squared);  // only used if OER is off; currently same as default parameters
+                    // p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);  // no normal cells in simulation
                     p_rt_killer->SetOerAlphaMax(1.75);
                     p_rt_killer->SetOerAlphaMin(1.0);
                     p_rt_killer->SetOerBetaMax(3.25);
                     p_rt_killer->SetOerBetaMin(1.0);
-                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);
+                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
+                    // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.00_Pa);  // adjust the radiobiological threshold here
                     p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
                     p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
-                    p_rt_killer->UseOer(true);
+                    p_rt_killer->UseOer(false);  // turn OER on and off here
 
-                    // Set Up the dosage times
+                    // Set up the dosage times
                     std::vector<QTime > rt_times;
-                    rt_times.push_back(3600.0*5.0*unit::seconds);
-                    rt_times.push_back(3600.0*10.0*unit::seconds);
-                    rt_times.push_back(3600.0*15.0*unit::seconds);
-                    // rt_times.push_back(3600.0*24.0*unit::seconds);
+                    // rt_times.push_back(3600.0*1.0*unit::seconds);
+                    // rt_times.push_back(3600.0*5.0*unit::seconds);
+                    // rt_times.push_back(3600.0*10.0*unit::seconds);
+                    // rt_times.push_back(3600.0*15.0*unit::seconds);
+                    rt_times.push_back(3600.0*24.0*unit::seconds);
                     // rt_times.push_back(3600.0*48.0*unit::seconds);
                     // rt_times.push_back(3600.0*72.0*unit::seconds);
                     p_rt_killer->SetTimeOfRadiation(rt_times);
@@ -1243,13 +1254,13 @@ public:
 
                     // Set up the simulation time and run it
                     simulator.SetOutputDirectory(str_directory_name);
-                    // simulator.SetSamplingTimestepMultiple(10);  // get sample every x steps (multiple*dt = time between s)
+                    // simulator.SetSamplingTimestepMultiple(10);  // get sample every x steps of Dt (multiple*dt = time between s)
                     simulator.SetSamplingTimestepMultiple(1);
                     // simulator.SetDt(1);  // simulation time step in hours
                     simulator.SetDt(1.0);
                     // simulator.SetEndTime(24*7);  // end time in hours
                     // simulator.SetEndTime(24);  // end time in hours
-                    simulator.SetEndTime(20.0);
+                    simulator.SetEndTime(24.0*7.0);  // one week
                     simulator.Solve();
 
                     // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
@@ -1301,7 +1312,10 @@ public:
     }
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tests without cells
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class TestHaematocritSolvers : public CxxTest::TestSuite
 {
 
@@ -15771,7 +15785,7 @@ public:
         // unsigned ToBeKilled = 2;  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=2; h_solver<=3; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -15805,16 +15819,16 @@ public:
             // std::vector<unsigned> broken_selections = {93, 99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the diameter lists            
             // for (unsigned list_number : broken_selections)
-            for(unsigned list_number=1; list_number<=1; list_number++)
+            for(unsigned list_number=1; list_number<=selections; list_number++)
             {             
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
 
                 // Loop over increasing level of heteregeneity 
-                for(unsigned n_sigma=0; n_sigma<=0; n_sigma++)
+                for(unsigned n_sigma=0; n_sigma<=max_n_sigma; n_sigma++)
                 {
                     // Loop over increasing level of mean diameter 
-                    for(unsigned n_mu=0; n_mu<=0; n_mu++)
+                    for(unsigned n_mu=0; n_mu<=max_n_mu; n_mu++)
                     {
                         // Convert to actual mu
                         std::vector<std::string> mus{"22.76", "28.5", "33.64"};
@@ -17312,10 +17326,11 @@ public:
 
         // Create the output file for the PQs
         std::ofstream outfile;
-        outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt");
-        outfile.close();
+        // outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt");
+        // outfile.close();
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
+        broken_layouts_file.open("/home/narain/Desktop/testoutput/broken_layouts.txt");
+        // broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -17352,14 +17367,14 @@ public:
             // std::vector<std::vector<double> > QuotientMatrixMean(max_n_mu,std::vector<double>(ToBeKilled+1));
             // std::vector<std::vector<double> > QuotientMatrixAggregate(max_n_mu,std::vector<double>(ToBeKilled+1,0.0));
             std::vector<std::vector<unsigned> > Order;
-            double PerfusionQuotient;
+            // double PerfusionQuotient;
 
             // Run simulations with different layouts (could be used to compute some average later)
             // std::vector<unsigned> broken_selections = {2, 9, 11, 49, 69, 80, 93, 99};
             // std::vector<unsigned> broken_selections = {99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=740;layout <= NumberOfLayouts; layout++)   
+            for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
             { 
 
                 // Set up flag for broken solver
@@ -17789,7 +17804,8 @@ public:
                             // If simulation doesn't converge, move on to next layout and log problem 
                             if (broken_solver == 1)
                             {
-                                broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                                // broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                                broken_layouts_file.open("/home/narain/Desktop/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
                                 broken_layouts_file << str_directory_name << " \n"; 
                                 broken_layouts_file.close();
 
@@ -17840,16 +17856,16 @@ public:
                             
                             // // Write the PQs
                             // QFlowRate threshold = 5.e-14*unit::metre_cubed_per_second;
-                            QFlowRate threshold = 1.e-12*unit::metre_cubed_per_second;
+                            // QFlowRate threshold = 1.e-12*unit::metre_cubed_per_second;
                             // QFlowRate threshold = 3.e-12*unit::metre_cubed_per_second;
                             // QFlowRate threshold = 2.e-13*unit::metre_cubed_per_second; 
-                            PerfusionQuotient = p_network->GetPerfusionQuotientBeta(threshold);
+                            // PerfusionQuotient = p_network->GetPerfusionQuotientBeta(threshold);
                             // QuotientMatrixAggregate[i][KilledVessels] += PerfusionQuotient;  // store the PQ with the associated NHet and number of kills
-                            outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt", std::ios_base::app);
+                            // outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt", std::ios_base::app);
                             // outfile << network_name << " " << solver_name << " " << heterogeneity_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                             // outfile << network_name << " " << solver_name << " " << mean_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                             // outfile << network_name << " " << solver_name << " " << selection_string << " " << sd_string << " " << mean_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
-                            outfile << network_name << " " << solver_name << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
+                            // outfile << network_name << " " << solver_name << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
                             outfile.close();
 
                             // // Remove the thinnest vessel
@@ -17927,30 +17943,6 @@ public:
         std::string error_message = error_log.str();
         std::cout << error_message << std::endl; 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Paper 3
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
- 
-
-
-
 
 
 };
