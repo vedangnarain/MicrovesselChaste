@@ -41,7 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This script contains tests that are used to simulate blood flow and oxygenation in different vascular architectures. 
 
-Outputs can usually be found in /tmp/<home_directory>/testoutput. The pointwise data for the field can be obtained by opening spreadsheet view in Paraview.
+The default location for outputs is /tmp/<home_directory>/testoutput. 
 
 H = Haematocrit
 BC = boundary condition
@@ -54,27 +54,21 @@ TO DO LIST
  
 Currently, we manually set no-flow vessels to have zero H, but maybe we should either put that bit of code in the solvers. Or set all relevant parameters (like viscosity) to zero too.
 
-In the homogeneous cases, the Pries & Memory solvers are breaking the Voronoi simulation. The solvers are currently replaced by Const. H. The Fung solver breaks it with some layouts.
+In the heterogeneous forking case, the Yang, Pries Memory, and Pries solvers are breaking the dichotomous simulation when alpha <6. When alpha<5, all but Yang work (which breaks at alpha=2). The Fung and Pries solvers break the Voronoi sometimes. The Fung, Pries, and Yang (sometimes) solvers don't converge in the hex network. The broken solvers are currently replaced by Const. H
 
-The Pries w. Memory solvers have been ignored for hex. and Voronoi since the network doesn't have directionality.
-
-In the heterogeneous case, the Yang, Pries Memory, and Pries solvers are breaking the dichotomous simulation when alpha <6. When alpha<5, all but Yang work (which breaks at alpha=2). The Fung and Pries solvers break the Voronoi sometimes. The Fung, Pries, and Yang (sometimes) solvers don't converge in the hex network. The broken solvers are currently replaced by Const. H
-
-The output node extends ~0.4 um beyond the x-extent of the simulation. It's because of the grid spacing resolution.
+In the forking network, the output node extends ~0.4 um beyond the x-extent of the simulation. It's because of the grid spacing resolution.
 
 I've marked unknown functionality with a '???'. Need to read up on it later.
 
-For some reason, you need to have an extra node for an unpruned network to have flow. However, single-path networks don't flow if you leave that node in. WHY? I've added a node at a distance of 100 picometres from the last one to circumvent the problem for now.
+For some reason in the equilateral network, you need to have an extra node for an unpruned network to have flow. However, single-path networks don't flow if you leave that node in. WHY? I've added a node at a distance of 100 picometres from the last one to circumvent the problem for now.
 
 I should move my equilateral network build to the Network Generator function, once I figure out why that extra node is needed.
 
-Link the inlet haematocrit (0.45) directly with Owen11 parameters.
-
-The y-extent for the hexagonal network is currently set manually based on the simulations. Find a way to make it appropriately cover the hexagonal network automatically.
+The y-extent for a non-hierarchical network is currently set manually based on the simulations. Find a way to make it appropriately cover the hexagonal network automatically.
 
 Unless the test name ends in 'Paper2', the broken_solver flag may not work because it is set to zero elsewhere in the test by mistake. Make sure it is only set to zero at the beginning of the loop you want to iterate over.
 
-18/7/23
+22/8/24
 
 */
 
@@ -701,7 +695,7 @@ public:
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.01;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.1;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
@@ -733,7 +727,7 @@ public:
         ////////////////////////////////////////////////////////////////
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=1; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -1207,7 +1201,7 @@ public:
                     // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.00_Pa);  // adjust the radiobiological threshold here
                     p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
                     p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
-                    p_rt_killer->UseOer(false);  // turn OER on and off here
+                    p_rt_killer->UseOer(true);  // turn OER on and off here
 
                     // Set up the dosage times
                     std::vector<QTime > rt_times;
@@ -1215,8 +1209,8 @@ public:
                     // rt_times.push_back(3600.0*5.0*unit::seconds);
                     // rt_times.push_back(3600.0*10.0*unit::seconds);
                     // rt_times.push_back(3600.0*15.0*unit::seconds);
-                    rt_times.push_back(3600.0*24.0*unit::seconds);
-                    // rt_times.push_back(3600.0*48.0*unit::seconds);
+                    // rt_times.push_back(3600.0*24.0*unit::seconds);
+                    rt_times.push_back(3600.0*48.0*unit::seconds);
                     // rt_times.push_back(3600.0*72.0*unit::seconds);
                     p_rt_killer->SetTimeOfRadiation(rt_times);
                     // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
@@ -6205,7 +6199,7 @@ public:
     }
 
     // Make a four-generation forking network on a PDE grid with different haematocrit splitting rules to compare with Hyakutake et al. (Microvascular Research, 2022)
-    void xTestFourGenerationNetworkWithFlow2DPaper2()
+    void xTestFourGenerationNetworkWithFlowApprox()
     {
         // Run the simulation with different heterogeneities
         for (unsigned n_alpha=0; n_alpha<=max_alpha; n_alpha++)
@@ -6466,7 +6460,7 @@ public:
                         }
                         if(iteration==max_iter-1)  // if there is no convergence after all the iterations, print the error message
                         {
-                            std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using alpha = " << n_alpha << " and lambda = " << lambda << std::endl;
+                            // std::cout << "Problem encountered in Dichotomous Network with h_solver = " << h_solver << " using alpha = " << n_alpha << " and lambda = " << lambda << std::endl;
                             EXCEPTION("Did not converge after " + std::to_string(iteration) + " iterations.");
                         }
                     }
@@ -6502,6 +6496,373 @@ public:
                 }
             }
         }
+    }
+
+    // Make a digital twin of the Hyakutake network to compare with Hyakutake et al. (Microvascular Research, 2022)
+    void xTestHyakutakeMicrofluidicsNetworkPaper2()
+    {
+        // Initialise error log
+        std::ostringstream error_log;
+        error_log << "\n The following simulations failed to converge: \n";
+        
+        // Set network in filename
+        std::string network_name = "TestHyakutakeMicrofluidicsNetwork/";
+
+        // Create the output file for the PQs
+        std::ofstream broken_layouts_file;
+        broken_layouts_file.open("/scratch/narain/testoutput/TestHyakutakeMicrofluidicsNetwork/broken_layouts.txt");
+        broken_layouts_file.close();        
+
+        // Set up the reference length for the simulation
+        QLength reference_length(1.0_um);
+        BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
+
+        // Define the key parameters
+        double dimless_domain_size_x = 357.4;  // x-coordinate of output node
+        // double dimless_domain_size_y = 500.0 + (1.0*50.0);  // same as x but with one vessel length above and below
+        // unsigned dimless_vessel_length = 100.0;
+        // QLength inlet_vessel_radius = 100.0_um;  // the maximum radius of the distribution
+        // QLength inlet_vessel_radius = 5.47_um;  // equals a square cross-section of 10x10 um
+        QDynamicViscosity viscosity = 4.8e-3*unit::poiseuille;  // same as Pa.s
+        double initial_haematocrit = 0.15;
+        double tolerance = 0.001;  // for location of inlet/outlet nodes
+
+        // Run the simulation with different solvers of interest
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        {
+            // Initialise the simulation
+            std::shared_ptr<VesselNetwork<2> > p_network;
+            std::vector<std::shared_ptr<Vessel<2> > > vessels;
+            QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
+            // QLength domain_side_length_y(dimless_domain_size_y * unit::microns);
+            std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
+
+            // Read the network layout from a file and store it in an array
+            VesselNetworkGenerator<2> network_generator;
+            std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/HyakutakeEdgesMatrix.txt");
+            std::vector<std::vector<double> > rEdgesMatrix;
+            string line;
+            while (std::getline(in, line)) 
+            {
+                rEdgesMatrix.push_back(std::vector<double>());
+                std::stringstream split(line);
+                double value;
+                while (split >> value)
+                {
+                    rEdgesMatrix.back().push_back(value);
+                }
+            }
+            // Set up flag for broken solver
+            unsigned broken_solver = 0;
+
+            // Choose a radii list file and read the file to an array
+            std::vector<std::vector<double> > radii_array;
+            radii_array.clear();
+            // int list_index=0;
+            string line_1;
+            std::ifstream radius_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/hyakutake_effective_radii.txt");
+            while (std::getline(radius_list_file, line_1)) 
+            {
+                radii_array.push_back(std::vector<double>());
+                std::stringstream split(line_1);
+                double value;
+                while (split >> value)
+                {
+                    radii_array.back().push_back(value);
+                }
+            }
+
+            // Choose the corresponding vessel ID order file and read the file to an array
+            // std::vector<std::vector<double> > id_array;
+            // id_array.clear();
+            // // int list_index=0;
+            // string line_2;
+            // std::ifstream id_list_file("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/MicrofluidicsNetworks/hexagonal_diameter_log_normal_distribution_sigma_"+sigma+"/mu_"+mu+"/id_list_"+to_string(list_number)+".txt");
+            // while (std::getline(id_list_file, line_2)) 
+            // {
+            //     id_array.push_back(std::vector<double>());
+            //     std::stringstream split(line_2);
+            //     double value;
+            //     while (split >> value)
+            //     {
+            //         id_array.back().push_back(value);
+            //     }
+            // }
+
+            // Generate the network
+            p_network = network_generator.GenerateNetworkFromMatrixWithID(rEdgesMatrix);
+
+            // Set inlet and outlet nodes (if node (start/end) is at the edge of the domain space, make it input or output depending on which side), and assign each non-inlet/outlet vessel a radius from the list
+            // bool multiple_inlet_outlet = true;
+            auto p_segment = p_network->GetVesselSegments()[0];
+            // p_segment->SetRadius(inlet_vessel_radius);
+            VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
+            vessels = p_network->GetVessels();
+            for (vessel_iterator = vessels.begin(); vessel_iterator != vessels.end(); vessel_iterator++)
+            {
+                if((*vessel_iterator)->GetStartNode()->GetNumberOfSegments() == 1)  // if the number of segments attached to the start node equals one (no other segments at nodes)
+                {
+                    if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] < 0.1+tolerance)  // if the start node is located approx. at the start of the domain 
+                    {
+                        // if (multiple_inlet_outlet || (int) (*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[1] < 87)
+                        // { 
+                            (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsInputNode(true);  // set the node as the input node
+                            // (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(5530.0*unit::pascals);  // set the input node pressure
+                            // (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(11000.0*unit::pascals);  // set the input node pressure
+                            (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetUseVelocityBoundaryCondition(true);  
+                            (*vessel_iterator)->GetStartNode()->GetSegment(0)->GetFlowProperties()->SetFlowRate(2.e-13*unit::metre_cubed_per_second);  // set the flow rate
+                        // }
+                    }
+                    if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] > dimless_domain_size_x - tolerance)  // if the start node is located approx. at the end of the domain 
+                    {                                    
+                        // if (multiple_inlet_outlet || (int) (*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[1] > 1731)
+                        // { 
+                            (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsOutputNode(true);  // set the node as the output node
+                            (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(0.0*unit::pascals);  // set the output node pressure                            
+
+                        // }                                
+                    }
+                }
+                if((*vessel_iterator)->GetEndNode()->GetNumberOfSegments() == 1)  // if the number of segments attached to the end node equals one (no other segments at nodes)	
+                {
+                    if((*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[0] < 0.1+tolerance)  // if the end node is located approx. at the start of the domain 
+                    {
+                        // if (multiple_inlet_outlet || (int) (*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[1] < 87)
+                        // {
+                            (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsInputNode(true);;  // set the node as the input node
+                            // (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(5530.0*unit::pascals);  // set the input node pressure
+                            // (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(11000.0*unit::pascals);  // set the input node pressure
+                            (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetUseVelocityBoundaryCondition(true);  
+                            (*vessel_iterator)->GetEndNode()->GetSegment(0)->GetFlowProperties()->SetFlowRate(2.e-13*unit::metre_cubed_per_second);  // set the flow rate
+                            // (*vessel_iterator)->GetEndNode()->GetSegment(0)->GetFlowProperties()->SetFlowRate(2.e-10*unit::metre_cubed_per_second);  // set the flow rate
+                        // }
+                    }
+                    if((*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[0] > dimless_domain_size_x - tolerance)  // if the end node is located approx. at the end of the domain 
+                    {
+                        // if (multiple_inlet_outlet || (int) (*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[1] > 1731)
+                        // {   
+                            (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsOutputNode(true);  // set the node as the output node
+                            (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(0.0*unit::pascals);  // set the output node pressure                            
+                        // }
+                    }
+                }
+            }
+        
+            // Assign vessel radii based on imported arrays
+            vessels = p_network->GetVessels();
+            for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
+            {                
+                // Get segment radius from array
+                QLength new_vessel_radius(double(radii_array[vessel_index][0])*unit::microns);
+                vessels[vessel_index]->SetRadius(new_vessel_radius);
+            }
+            vessels = p_network->GetVessels();
+
+            // Remove diameter heterogeneity
+            // p_segment = p_network->GetVesselSegments()[0];
+            // p_segment->SetRadius(100.0_um);
+            // VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
+
+            // Set the haematocrit solver
+            std::shared_ptr<AbstractHaematocritSolver<2>> p_abstract_haematocrit_solver;
+            std::string solver_name;
+            if (h_solver==1)
+            {
+                solver_name = "ConstantHaematocrit"; 
+                std::cout << "Now using ConstantHaematocritSolver..." << std::endl;
+                auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();  
+                p_haematocrit_solver->SetVesselNetwork(p_network);
+                p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                p_abstract_haematocrit_solver = p_haematocrit_solver;     
+            }
+            else if (h_solver==2)
+            {
+                solver_name = "PriesHaematocrit"; 
+                std::cout << "Now using PriesHaematocritSolver..." << std::endl;
+                auto p_haematocrit_solver = PriesHaematocritSolver<2>::Create();
+                // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();     
+                p_haematocrit_solver->SetVesselNetwork(p_network);
+                p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                p_abstract_haematocrit_solver = p_haematocrit_solver;                
+            }
+            else if (h_solver==3)
+            {
+                solver_name = "MemoryHaematocrit"; 
+                std::cout << "Now using PriesWithMemoryHaematocritSolver..." << std::endl;
+                auto p_haematocrit_solver = PriesWithMemoryHaematocritSolver<2>::Create();
+                // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
+                p_haematocrit_solver->SetVesselNetwork(p_network);
+                p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                p_abstract_haematocrit_solver = p_haematocrit_solver;     
+            }
+            else if (h_solver==4)
+            {
+                solver_name = "FungHaematocrit"; 
+                std::cout << "Now using FungHaematocritSolver..." << std::endl;
+                auto p_haematocrit_solver = BetteridgeHaematocritSolver<2>::Create();
+                // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
+                p_haematocrit_solver->SetVesselNetwork(p_network);
+                p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                p_abstract_haematocrit_solver = p_haematocrit_solver;     
+            }
+
+            // Set up the viscosity solver
+            auto p_viscosity_calculator = ViscosityCalculator<2>::Create();
+            p_viscosity_calculator->SetPlasmaViscosity(viscosity);
+            p_viscosity_calculator->SetVesselNetwork(p_network);
+            p_viscosity_calculator->Calculate();
+            
+            // Set up the impedance solver
+            auto p_impedance_calculator = VesselImpedanceCalculator<2>::Create();
+            p_impedance_calculator->SetVesselNetwork(p_network);
+            p_impedance_calculator->Calculate();
+
+            // Set up the flow solver 
+            FlowSolver<2> flow_solver;
+            flow_solver.SetVesselNetwork(p_network);
+            // flow_solver.SetUp();
+            flow_solver.SetUseDirectSolver(true);
+            // flow_solver.Solve();
+
+            // Prune all vessels up to specified dose 
+            for(unsigned KilledVessels=0; KilledVessels <= 0; KilledVessels++)
+            { 
+                // Display status message
+                std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
+
+                // Set filename
+                std::stringstream selection_stream;
+                std::stringstream kill_stream;
+                kill_stream << std::fixed << std::setprecision(0) << KilledVessels;           
+                std::string kill_string = kill_stream.str();                    
+                std::string file_name = network_name + solver_name + "/Kills" + kill_string;                        
+                std::string str_directory_name = file_name;
+                std::cout << str_directory_name << std::endl;
+                auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
+
+                // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
+                unsigned max_iter = 1000;
+                double tolerance2 = 1.e-10;
+                std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
+                std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
+                for(unsigned idx=0; idx<max_iter; idx++)
+                {
+                    // Run the solvers
+                    p_viscosity_calculator->Calculate();
+                    p_impedance_calculator->Calculate();
+                    flow_solver.SetUp();
+                    flow_solver.Solve();
+                    p_abstract_haematocrit_solver->Calculate();
+
+                    // Get the residual
+                    double max_difference = 0.0;
+                    double h_for_max = 0.0;
+                    double prev_for_max = 0.0;
+                    for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
+                    {
+                        double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
+                        double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
+                        if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
+                        {
+                            max_difference = difference;
+                            h_for_max = current_haematocrit;
+                            prev_for_max = previous_haematocrit[jdx];
+                        }
+                        previous_haematocrit[jdx] = current_haematocrit;
+                    }
+                    std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
+
+                    // Print the final or intermediary convergence results
+                    if(max_difference<=tolerance2)  
+                    {
+                        std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
+                        // broken_solver = 0;
+                        break;
+                    }
+                    else
+                    {
+                        if(idx%1==0)
+                        {
+                            std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
+                            std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
+                            std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
+                            p_network->Write(output_file);
+                        }
+                    }
+
+                    // If there is no convergence after all the iterations, print the error message.
+                    if(idx==max_iter-1)
+                    {
+                        std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                        error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
+                        broken_solver = 1;
+                        break;
+                    }
+                }
+
+                // If simulation doesn't converge, move on to next layout and log problem 
+                if (broken_solver == 1)
+                {
+                    broken_layouts_file.open("/scratch/narain/testoutput/TestHyakutakeMicrofluidicsNetwork/broken_layouts.txt", std::ios_base::app);
+                    broken_layouts_file << str_directory_name << " \n"; 
+                    broken_layouts_file.close();
+
+                    // Move onto the next selection
+                    break;
+                }
+
+                // Run the simulation 
+                SimulationTime::Instance()->SetStartTime(0.0);
+                SimulationTime::Instance()->SetEndTimeAndNumberOfTimeSteps(1.0, 1);  // let's just do 1 time step; will be steady state anyway
+                auto p_microvessel_solver = MicrovesselSolver<2>::Create();
+                p_microvessel_solver->SetVesselNetwork(p_network);
+                p_microvessel_solver->SetOutputFileHandler(p_file_handler);
+                // p_microvessel_solver->AddDiscreteContinuumSolver(p_oxygen_solver);
+                p_microvessel_solver->Run();
+                std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append("FinalHaematocrit.vtp");
+                p_network->Write(output_file);
+
+                // Remove the smallest vessel
+                // vessels = p_network->GetVessels();
+                // QLength minimum_radius = 1000.0_um;
+                // unsigned int minimum_index = 0;
+                // for(unsigned vessel_index=1; vessel_index<vessels.size(); vessel_index++)  // for all the non-inlet/outlet segments in the network
+                // {                            
+                //     // // Exclude inlets and outlets
+                    // if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                    // || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                    // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                    // || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                //     // {
+                //         // Get the current segment's radius
+                //         QLength current_radius = vessels[vessel_index]->GetRadius();
+
+                //         // If the current radius is less than the minimum radius, record the new minimum
+                //         if (current_radius < minimum_radius)
+                //         {
+                //             minimum_radius = current_radius;
+                //             minimum_index = vessel_index;
+                //         }     
+                //     // }
+                // }
+                // p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel            
+                
+                // Dump our parameter collection to an xml file and, importantly, clear it for the next test
+                ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
+                ParameterCollection::Instance()->Destroy();
+                BaseUnits::Instance()->Destroy();
+                SimulationTime::Instance()->Destroy();
+            }
+            // If simulation doesn't converge, move on to next layout
+            if (broken_solver == 1)
+            {
+                break;
+            }
+        }
+         
+        // Print the error log
+        std::string error_message = error_log.str();
+        std::cout << error_message << std::endl; 
     }
 
     // Make a multi-generation forking network with different h-splitting rules and individual pruning

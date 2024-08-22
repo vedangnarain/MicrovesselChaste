@@ -61,6 +61,7 @@ simulation/flow/TestNoHaematocritRadiotherapy.hpp
 simulation/flow/TestElementaryNetwork.hpp
 simulation/flow/TestHaematocritSolvers.hpp
 simulation/flow/TestEnhancedPerfusionFollowingExposureToRadiotherapy.hpp
+simulation/flow/TestPaper3.hpp
 simulation/flow/TestVesselBug.hpp
 simulation/flow/TestHexNodeBug.hpp
 simulation/flow/TestForkingNodeBug.hpp
