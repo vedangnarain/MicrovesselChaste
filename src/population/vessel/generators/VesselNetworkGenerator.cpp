@@ -1379,9 +1379,11 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateHexago
 	    }
             pVesselNetwork->AddVessel(pAuxVessel);
     }
+                    std::cout << "error here 1" << std::endl;  
 
     pVesselNetwork->MergeCoincidentNodes();
-    pVesselNetwork->UpdateAll();
+                     std::cout << "error here 1" << std::endl;  
+   pVesselNetwork->UpdateAll();
 
     // Remove vessels with both nodes outside of the bounds
     std::vector<std::shared_ptr<Vessel<DIM> > > vessels = pVesselNetwork->GetVessels();
@@ -1479,6 +1481,7 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateVorono
     pVesselNetwork->UpdateAll();
     return pVesselNetwork;
 }
+
 template<unsigned DIM>
 std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateNetworkFromMatrixWithID(std::vector<std::vector<double>> rEdgesMatrix)
 {
@@ -1496,6 +1499,7 @@ std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateNetwor
     pVesselNetwork->UpdateAll();
     return pVesselNetwork;
 }
+
 template<unsigned DIM>
 std::shared_ptr<VesselNetwork<DIM> > VesselNetworkGenerator<DIM>::GenerateRealNetworkFromMatrices3D(std::vector<std::vector<double>> rCoordinatesMatrix, std::vector<std::vector<double>> rDiametersMatrix)
 {
