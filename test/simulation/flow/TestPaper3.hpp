@@ -167,6 +167,13 @@ The y-extent for a non-hierarchical network is currently set manually based on t
 #include "ApoptoticCellKiller.hpp"
 #include "SimpleOxygenBasedCellCycleModel.hpp"
 #include "StemCellProliferativeType.hpp"
+#include "OffLatticeSimulation.hpp"
+#include "CellsGenerator.hpp"
+#include "TransitCellProliferativeType.hpp"
+#include "UniformCellCycleModel.hpp"
+#include "NodesOnlyMesh.hpp"
+#include "NodeBasedCellPopulation.hpp"
+#include "NodeBasedCellPopulation.hpp"
 
 // Forces
 #include "GeneralisedLinearSpringForce.hpp"
@@ -1296,7 +1303,7 @@ public:
     }
 
     // Simulate an experimentally-acquired network on a PDE grid with flow and O2 and cells
-    void TestBiologicalNetwork2DWithFlowAndO2AndCells() 
+    void xTestBiologicalNetwork2DWithFlowAndO2AndCells() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -1321,7 +1328,7 @@ public:
         unsigned ToBeKilled = 0;  // number to kill
         
         // Match this based on cell size
-        QLength cell_grid_spacing = 10.0_um;
+        QLength cell_grid_spacing = 100.0_um;
 
         // Seed the random number generator
         RandomNumberGenerator::Instance()->Reseed(12345);
@@ -1346,7 +1353,6 @@ public:
         for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {     
             // Initialise the simulation
-            std::shared_ptr<VesselNetwork<2> > p_network;
             std::vector<std::shared_ptr<Vessel<2> > > vessels;
             VesselPtr<2> p_current_vessel;
             QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
@@ -1357,7 +1363,8 @@ public:
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
                 
-                // Read the network layout from a file
+                // Read the network layout from an edge matrix
+                std::shared_ptr<VesselNetwork<2> > p_network;
                 VesselNetworkGenerator<2> network_generator;
                 std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/biological/CombinedSkeletons.txt");
                 // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/biological/Skeleton_66.txt");
@@ -1373,14 +1380,38 @@ public:
                             rEdgesMatrix.back().push_back(value);
                     }
                 }
-
-                // Generate the network
                 p_network = network_generator.GenerateVoronoiNetwork(rEdgesMatrix);
 
-                // Set inlet and outlet nodes (if node (start/end) is at the edge of the domain space, make it input or output depending on which side), and assign each vessel a radius from the list  
-                auto p_segment = p_network->GetVesselSegments()[0];
+                // Read the network layout from a VTP file (doesn't work yet)
+                // std::shared_ptr<VesselNetworkReader<2> > p_vessel_reader = std::shared_ptr<VesselNetworkReader<2> >(new VesselNetworkReader<2> );
+                // FileFinder file_finder = FileFinder("/projects/MicrovesselChaste/test/data/interesting/FinalHaematocrit.vtp", RelativeTo::ChasteSourceRoot);
+                // p_vessel_reader->SetFileName(file_finder.GetAbsolutePath());
+                // p_vessel_reader->SetMergeCoincidentPoints(true);
+                // // p_vessel_reader->SetTargetSegmentLength(40.0e-6*unit::metres);
+                // std::shared_ptr<VesselNetwork<2> >  p_network = p_vessel_reader->Read();
+                // auto p_clean_file_handler = std::make_shared<OutputFileHandler>(network_name, true);
+                // p_network->Write(p_clean_file_handler->GetOutputDirectoryFullPath() + "cleaned_network.vtp");
+                // std::cout << "This is line number: " << __LINE__ << std::endl;
+                // QLength short_vessel_cutoff = 1.0_um;
+                // bool remove_end_vessels_only = true;
+                // p_network->RemoveShortVessels(short_vessel_cutoff, remove_end_vessels_only);
+                // p_network->UpdateAll();
+                // p_network->MergeCoincidentNodes();
+                // p_network->UpdateAll();
+
+
+                // Manually set the inlets and outlets
                 vessels = p_network->GetVessels();
-                
+                p_network->GetNode(187)->GetFlowProperties()->SetIsInputNode(true);
+                p_network->GetNode(187)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
+                p_network->GetNode(1084)->GetFlowProperties()->SetIsOutputNode(true);
+                p_network->GetNode(1084)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
+
+                p_network->GetNode(1557)->GetFlowProperties()->SetIsInputNode(true);
+                p_network->GetNode(1557)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
+                p_network->GetNode(1091)->GetFlowProperties()->SetIsOutputNode(true);
+                p_network->GetNode(1091)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
+
                 // Assign the first vessel as the input and the last as the output and remove all other dead ends (i.e., make the network single inlet and outlet)
                 // double tolerance = 0.001;  // for location of inlet/outlet nodes
                 // vessels = p_network->GetVessels();
@@ -1414,29 +1445,10 @@ public:
                 //     }
                 // }
 
-                // Manually set the inlets and outlets
-                p_network->GetNode(187)->GetFlowProperties()->SetIsInputNode(true);
-                p_network->GetNode(187)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
-                p_network->GetNode(1084)->GetFlowProperties()->SetIsOutputNode(true);
-                p_network->GetNode(1084)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
-
-                p_network->GetNode(1557)->GetFlowProperties()->SetIsInputNode(true);
-                p_network->GetNode(1557)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
-                p_network->GetNode(1091)->GetFlowProperties()->SetIsOutputNode(true);
-                p_network->GetNode(1091)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
-
                 // Remove diameter heterogeneity
-                p_segment = p_network->GetVesselSegments()[0];
+                auto p_segment = p_network->GetVesselSegments()[0];
                 p_segment->SetRadius(7.5_um);  // same as Mantegazza
                 VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
-
-                // units::quantity<unit::length> short_vessel_cutoff = 40.0e-6 * unit::metres;
-                // bool remove_end_vessels_only = true;
-                // p_network->RemoveShortVessels(short_vessel_cutoff, remove_end_vessels_only);
-                // p_network->UpdateAll();
-                // p_network->MergeCoincidentNodes();
-                // p_network->UpdateAll();
-                // p_network->Write(p_handler->GetOutputDirectoryFullPath() + "merged_network.vtp");
 
                 // Prune all vessels up to specified dose 
                 // for(unsigned KilledVessels=0; KilledVessels < ToBeKilled; KilledVessels++)
