@@ -104,7 +104,7 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 // #include <vector>
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
-#include "AbstractCellBasedWithTimingsTestSuite.hpp"
+// #include "AbstractCellBasedWithTimingsTestSuite.hpp"
 #include "CheckpointArchiveTypes.hpp"
 #include "FileFinder.hpp"
 #include "OutputFileHandler.hpp"
@@ -125,17 +125,17 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 #include "Vertex.hpp"
 
 // Grids and PDEs
-#include "CellBasedDiscreteSource.hpp"
-#include "CellStateDependentDiscreteSource.hpp"
+// #include "CellBasedDiscreteSource.hpp"
+// #include "CellStateDependentDiscreteSource.hpp"
 #include "SimpleLinearEllipticFiniteDifferenceSolver.hpp"
 #include "SimpleLinearEllipticFiniteElementSolver.hpp"
 #include "DiscreteContinuumBoundaryCondition.hpp"
 #include "DiscreteContinuumLinearEllipticPde.hpp"
 #include "RegularGrid.hpp"
 #include "GridCalculator.hpp"
-#include "CellwiseSourceEllipticPde.hpp"
-#include "ConstBoundaryCondition.hpp"
-#include "EllipticGrowingDomainPdeModifier.hpp"
+// #include "CellwiseSourceEllipticPde.hpp"
+// #include "ConstBoundaryCondition.hpp"
+// #include "EllipticGrowingDomainPdeModifier.hpp"
 #include "VesselBasedDiscreteSource.hpp"
 
 // Vessel networks
@@ -153,10 +153,10 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 #include "VesselImpedanceCalculator.hpp"
 #include "FlowSolver.hpp"
 #include "WallShearStressCalculator.hpp"
-#include "MechanicalStimulusCalculator.hpp"
-#include "MetabolicStimulusCalculator.hpp"
-#include "ShrinkingStimulusCalculator.hpp"
-#include "StructuralAdaptationSolver.hpp"
+// #include "MechanicalStimulusCalculator.hpp"
+// #include "MetabolicStimulusCalculator.hpp"
+// #include "ShrinkingStimulusCalculator.hpp"
+// #include "StructuralAdaptationSolver.hpp"
 #include "ViscosityCalculator.hpp"
 
 // Haematocrit
@@ -169,37 +169,37 @@ Unless the test name ends in 'Paper2', the broken_solver flag may not work becau
 #include "PriesWithMemoryHaematocritSolver.hpp"
 
 // Cells
-#include "CancerCellMutationState.hpp"
-#include "StalkCellMutationState.hpp"
-#include "QuiescentCancerCellMutationState.hpp"
-#include "WildTypeCellMutationState.hpp"
-#include "Owen11CellPopulationGenerator.hpp"
-#include "Owen2011TrackingModifier.hpp"
-#include "CaBasedCellPopulation.hpp"
-#include "ApoptoticCellKiller.hpp"
-#include "SimpleOxygenBasedCellCycleModel.hpp"
-#include "StemCellProliferativeType.hpp"
+// #include "CancerCellMutationState.hpp"
+// #include "StalkCellMutationState.hpp"
+// #include "QuiescentCancerCellMutationState.hpp"
+// #include "WildTypeCellMutationState.hpp"
+// #include "Owen11CellPopulationGenerator.hpp"
+// #include "Owen2011TrackingModifier.hpp"
+// #include "CaBasedCellPopulation.hpp"
+// #include "ApoptoticCellKiller.hpp"
+// #include "SimpleOxygenBasedCellCycleModel.hpp"
+// #include "StemCellProliferativeType.hpp"
 
 // Forces
-#include "GeneralisedLinearSpringForce.hpp"
+// #include "GeneralisedLinearSpringForce.hpp"
 
 // Angiogenesis
-#include "Owen2011SproutingRule.hpp"
-#include "Owen2011MigrationRule.hpp"
-#include "AngiogenesisSolver.hpp"
+// #include "Owen2011SproutingRule.hpp"
+// #include "Owen2011MigrationRule.hpp"
+// #include "AngiogenesisSolver.hpp"
 
 // Vessel regression solver
-#include "WallShearStressBasedRegressionSolver.hpp"
+// #include "WallShearStressBasedRegressionSolver.hpp"
 
 // General solver to collect all the flows
 #include "MicrovesselSolver.hpp"
-#include "MicrovesselSimulationModifier.hpp"
-#include "OnLatticeSimulation.hpp"
-#include "OffLatticeSimulation.hpp"
+// #include "MicrovesselSimulationModifier.hpp"
+// #include "OnLatticeSimulation.hpp"
+// #include "OffLatticeSimulation.hpp"
 
 // Visualisation
-#include "MicrovesselVtkScene.hpp"
-#include "VtkSceneMicrovesselModifier.hpp"
+// #include "MicrovesselVtkScene.hpp"
+// #include "VtkSceneMicrovesselModifier.hpp"
 
 // Keep this last
 #include "PetscAndVtkSetupAndFinalize.hpp"
@@ -16577,7 +16577,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -17205,7 +17205,6 @@ public:
         std::string error_message = error_log.str();
         std::cout << error_message << std::endl; 
     }
-
 
 };
 
