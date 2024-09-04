@@ -207,7 +207,7 @@ class TestPaper3 : public AbstractCellBasedWithTimingsTestSuite
 public:
 
     // Simulate a 2D hexagonal network on a PDE grid with flow and H-splitting (single inlet and outlet) and cells
-    void xTestSingleFeedHexagonalUnitWithCells2D()
+    void xTestSingleFeedHexagonalUnit2D()
     {
         // Set file name
         std::ostringstream strs;
@@ -665,7 +665,7 @@ public:
     }
 
     // Simulate a 2D Voronoi network on a PDE grid with flow and H-splitting and O2 and cells
-    void xTestVoronoiNetwork2DWithFlowAndO2AndCellsPaper3() 
+    void TestVoronoiNetwork2DPaper3() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -684,7 +684,7 @@ public:
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.01;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.35;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
@@ -735,7 +735,7 @@ public:
             // std::vector<unsigned> broken_selections = {99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=424;layout <= 424; layout++)   
+            for (unsigned layout=424;layout<=424; layout++)   
             { 
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
@@ -1179,21 +1179,6 @@ public:
                     // Add a LQ RT killer
                     boost::shared_ptr<LQRadiotherapyCellKiller<2> > p_rt_killer =
                     boost::shared_ptr<LQRadiotherapyCellKiller<2> >(new LQRadiotherapyCellKiller<2> (p_cell_population.get()));
-                    p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
-                    // p_rt_killer->SetDoseInjected(4.0*unit::gray);  // modify dose here
-                    // p_rt_killer->SetCancerousRadiosensitivity(0.3 * unit::per_gray, 0.03 * unit::per_gray_squared);  // only used if OER is off; currently same as default parameters
-                    // p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);  // no normal cells in simulation
-                    p_rt_killer->SetOerAlphaMax(1.75);
-                    p_rt_killer->SetOerAlphaMin(1.0);
-                    p_rt_killer->SetOerBetaMax(3.25);
-                    p_rt_killer->SetOerBetaMin(1.0);
-                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
-                    // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.00_Pa);  // adjust the radiobiological threshold here
-                    p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
-                    p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
-                    p_rt_killer->UseOer(true);  // turn OER on and off here
-
-                    // Set up the dosage times
                     std::vector<QTime > rt_times;
                     rt_times.push_back(3600.0*1.0*unit::seconds);
                     // rt_times.push_back(3600.0*5.0*unit::seconds);
@@ -1204,6 +1189,32 @@ public:
                     // rt_times.push_back(3600.0*72.0*unit::seconds);
                     p_rt_killer->SetTimeOfRadiation(rt_times);
                     // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
+                    p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
+                    // p_rt_killer->SetDoseInjected(4.0*unit::gray);  // modify dose here
+
+                    // Set up the radiobiological parameters common to all models
+                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // K_OER
+                    double alpha_max = 0.3;
+                    double beta_max = 0.3;
+                    p_rt_killer->UseOer(true);  // turn OER on and off here
+                    p_rt_killer->UseConstantOer(true);  // true = Lewin OER, false = Scott OER
+
+                    // If OER is on, set the common radiosensitivity parameters
+                    p_rt_killer->SetAlphaMax(alpha_max * unit::per_gray);
+                    p_rt_killer->SetBetaMax(beta_max * unit::per_gray_squared);
+
+                    // If we're using the Scott OER model                    
+                    p_rt_killer->SetOerAlphaMax(1.75);
+                    p_rt_killer->SetOerAlphaMin(1.0);
+                    p_rt_killer->SetOerBetaMax(3.25);
+                    p_rt_killer->SetOerBetaMin(1.0);
+
+                    // If OER is off, set the radiosensitivity parameters for different cells explicitly
+                    p_rt_killer->SetCancerousRadiosensitivity(alpha_max * unit::per_gray, beta_max * unit::per_gray_squared);  // alpha, beta
+                    // p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);  // no normal cells in simulation
+                    p_rt_killer->SetNormalRadiosensitivity(0.0 * unit::per_gray, 0.0 * unit::per_gray_squared);  // no normal cells in simulation
+
+                    // Add the RT cell killer
                     simulator.AddCellKiller(p_rt_killer);
 
                     // If needed
@@ -1296,15 +1307,15 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-    // Simulate an experimentally-acquired network on a PDE grid with flow and O2 and cells
-    void xTestBiologicalNetwork2DWithFlowAndO2AndCells() 
+    // Simulate an experimentally-acquired healthy network on a PDE grid with flow and O2 and cells
+    void xTestHealthyNetwork2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
         error_log << "\n The following simulations failed to converge: \n";
 
         // Set network in filename
-        std::string network_name = "TestBiologicalNetworkTissue/";
+        std::string network_name = "TestHealthyNetworkTissue/";
 
         // Choose the vascular parameters
         // unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
@@ -1329,7 +1340,7 @@ public:
 
         // Create the log file for broken simulations
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/scratch/narain/testoutput/TestBiologicalNetwork/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/testoutput/TestHealthyNetworkTissue/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -1663,7 +1674,7 @@ public:
                     // If simulation doesn't converge, move on to next layout and log problem 
                     if (broken_solver == 1)
                     {
-                        broken_layouts_file.open("/scratch/narain/testoutput/TestBiologicalNetwork/broken_layouts.txt", std::ios_base::app);
+                        broken_layouts_file.open("/scratch/narain/testoutput/TestHealthyNetworkTissue/broken_layouts.txt", std::ios_base::app);
                         broken_layouts_file << str_directory_name << " \n"; 
                         broken_layouts_file.close();
 
@@ -1887,15 +1898,15 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-    // Simulate an experimentally-acquired network on a PDE grid with flow and O2 and experimentally-acquired cells
-    void TestExperimentalImage2DWithFlowAndO2AndCells() 
+    // Simulate an experimentally-acquired metastatic network on a PDE grid with flow and O2 and experimentally-acquired cells
+    void xTestMetastaticImage2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
         error_log << "\n The following simulations failed to converge: \n";
 
         // Set network in filename
-        std::string network_name = "TestBiologicalNetworkTissue/";
+        std::string network_name = "TestMetastaticNetworkTissue/";
 
         // Choose the domain dimensions (lectin monotile)
         double dimless_domain_size_x = 1214.56; 
@@ -1907,7 +1918,7 @@ public:
 
         // Set the initial blood parameters
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
-        double initial_haematocrit = 0.07;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.01;  // conks out somewhere between 0.35 and 0.4
         
         // Change the resolution for the PDE fields
         QLength cell_grid_spacing = 1.0_um;
@@ -1917,7 +1928,7 @@ public:
 
         // Create the log file for broken simulations
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/scratch/narain/testoutput/TestBiologicalNetwork/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -2149,7 +2160,7 @@ public:
             // If simulation doesn't converge, move on to next layout and log problem 
             if (broken_solver == 1)
             {
-                broken_layouts_file.open("/scratch/narain/testoutput/TestBiologicalNetwork/broken_layouts.txt", std::ios_base::app);
+                broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt", std::ios_base::app);
                 broken_layouts_file << str_directory_name << " \n"; 
                 broken_layouts_file.close();
 
@@ -2346,7 +2357,7 @@ public:
             // Initialise the solver
             auto p_microvessel_solver = MicrovesselSolver<2>::Create();
             p_microvessel_solver->SetVesselNetwork(p_network);
-            p_microvessel_solver->SetOutputFrequency(5_h);
+            p_microvessel_solver->SetOutputFrequency(1_h);
             // p_microvessel_solver->SetOutputFileHandler(p_file_handler);
             p_microvessel_solver->AddDiscreteContinuumSolver(p_oxygen_solver);
             p_microvessel_solver->AddDiscreteContinuumSolver(p_vegf_solver);
@@ -2403,7 +2414,7 @@ public:
             simulator.SetOutputDirectory(str_directory_name);
             simulator.SetSamplingTimestepMultiple(1);
             simulator.SetDt(1.0);
-            simulator.SetEndTime(20.0);  // hours
+            simulator.SetEndTime(3.0);  // hours
             simulator.Solve();
             // std::cout << "This is line number: " << __LINE__ << std::endl;
 

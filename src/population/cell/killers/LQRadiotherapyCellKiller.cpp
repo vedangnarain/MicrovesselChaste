@@ -39,6 +39,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BaseUnits.hpp"
 #include "Secomb04Parameters.hpp"
 #include "GenericParameters.hpp"
+#include "Owen11Parameters.hpp"
+// #include "QuiescentCancerCellMutationState.hpp"
+#include <iostream> // Include the iostream header for std::cout
 
 template<unsigned DIM>
 LQRadiotherapyCellKiller<DIM>::LQRadiotherapyCellKiller(AbstractCellPopulation<DIM>* pCellPopulation) :
@@ -56,7 +59,8 @@ LQRadiotherapyCellKiller<DIM>::LQRadiotherapyCellKiller(AbstractCellPopulation<D
         mKOer(0.0*unit::mole_per_metre_cubed),
         mAlphaMax(0.3 * unit::per_gray),
         mBetaMax(0.03 * unit::per_gray_squared),
-        mUseOer(false)
+        mUseOer(false),
+        mUseConstantOer(false)
 {
     QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") *
             GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");
@@ -130,6 +134,12 @@ void LQRadiotherapyCellKiller<DIM>::UseOer(bool useOer)
 }
 
 template<unsigned DIM>
+void LQRadiotherapyCellKiller<DIM>::UseConstantOer(bool useConstantOer)
+{
+    mUseConstantOer = useConstantOer;
+}
+
+template<unsigned DIM>
 void LQRadiotherapyCellKiller<DIM>::SetCancerousRadiosensitivity(QPerAbsorbedDose alpha,
                                                                  QPerAbsorbedDoseSquared beta)
 {
@@ -145,6 +155,7 @@ void LQRadiotherapyCellKiller<DIM>::SetNormalRadiosensitivity(QPerAbsorbedDose a
     normalQuadraticRadiosensitivity = beta;
 }
 
+
 template<unsigned DIM>
 void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr pCell)
 {
@@ -158,13 +169,45 @@ void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr 
                 double death_probability = 0.0;
                 if (mUseOer)
                 {
-                    QConcentration oxygen =
-                            pCell->GetCellData()->GetItem("oxygen")*BaseUnits::Instance()->GetReferenceConcentrationScale();
-                    double oer_alpha = (mOerAlphaMax - mOerAlphaMin) * mKOer / (oxygen + mKOer) + mOerAlphaMin;
-                    double oer_beta = (mOerBetaMax - mOerBetaMin) * mKOer / (oxygen + mKOer) + mOerBetaMin;
-                    QPerAbsorbedDose alpha = mAlphaMax / oer_alpha;
-                    QPerAbsorbedDoseSquared beta = mBetaMax / (oer_beta * oer_beta);
-                    death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
+                    // Get the cell's oxygen concentration
+                    QConcentration oxygen = pCell->GetCellData()->GetItem("oxygen")*BaseUnits::Instance()->GetReferenceConcentrationScale();  // mol/metre_cubed
+                    
+                    // If we want to use a constant OER for hypoxic cells
+                    if (mUseConstantOer)
+                    {
+                        // Set the oxygen solubility at STP and the radioresistant threshold
+                        QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") * GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");  // * 1/Pa * mol/metre_cubed 
+                        QPressure radioresistant_threshold = Owen11Parameters::mpOxygenPartialPressureAtHalfMaxCycleRateNormal->GetValue("LQRadiotherapyCellKiller");  // Pa
+                        double oer_constant; 
+
+                        // For debugging
+                        // std::cout << "oxygen (mol/m3): " << oxygen << std::endl;
+                        // std::cout << "mpOxygenVolumetricSolubility (1/Pa)" << Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") << std::endl;
+                        // std::cout << "mpGasConcentrationAtStp (mol/metre_cubed_mmHg): " << GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller") << std::endl;
+                        // std::cout << "oxygen (Pa): " << oxygen/oxygen_solubility_at_stp << std::endl;
+                        // std::cout << "radioresistant_threshold (Pa): " << radioresistant_threshold << std::endl;
+
+                        // If the cell is a hypoxic cancer cell, use the OER constant
+                        if (oxygen/oxygen_solubility_at_stp<=radioresistant_threshold)
+                        {
+                            oer_constant = 3.0;
+                        }
+                        else
+                        {
+                            oer_constant = 1.0;
+                        }
+                        QPerAbsorbedDose alpha = mAlphaMax / oer_constant;
+                        QPerAbsorbedDoseSquared beta = mBetaMax / (oer_constant * oer_constant);
+                        death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
+                    }
+                    else
+                    {
+                        double oer_alpha = (mOerAlphaMax - mOerAlphaMin) * mKOer / (oxygen + mKOer) + mOerAlphaMin;
+                        double oer_beta = (mOerBetaMax - mOerBetaMin) * mKOer / (oxygen + mKOer) + mOerBetaMin;
+                        QPerAbsorbedDose alpha = mAlphaMax / oer_alpha;
+                        QPerAbsorbedDoseSquared beta = mBetaMax / (oer_beta * oer_beta);
+                        death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
+                    }
                 }
                 else
                 {
@@ -178,7 +221,6 @@ void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr 
             }
         }
     }
-
 }
 
 template<unsigned DIM>

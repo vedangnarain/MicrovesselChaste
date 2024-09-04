@@ -122,6 +122,11 @@ class LQRadiotherapyCellKiller : public AbstractCellKiller<DIM>
      */
     bool mUseOer;
 
+    /**
+     * Whether to use a fixed oxygen enhancement ratio for hypoxic cells (as opposed to a concentration-dependent ratio)
+     */
+    bool mUseConstantOer;
+
 private:
 
     /** Needed for serialization. */
@@ -252,6 +257,12 @@ public:
      * @param useOer Whether to use OER
      */
     void UseOer(bool useOer);
+
+    /**
+     * Whether to use a fixed OER for hypoxic cells (as opposed to a concentration-dependent OER)
+     * @param useOer Whether to use OER
+     */
+    void UseConstantOer(bool useConstantOer);
 
 };
 
