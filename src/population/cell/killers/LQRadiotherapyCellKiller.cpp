@@ -41,7 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GenericParameters.hpp"
 #include "Owen11Parameters.hpp"
 // #include "QuiescentCancerCellMutationState.hpp"
-#include <iostream> // Include the iostream header for std::cout
+#include <iostream>  // for debugging only
 
 template<unsigned DIM>
 LQRadiotherapyCellKiller<DIM>::LQRadiotherapyCellKiller(AbstractCellPopulation<DIM>* pCellPopulation) :
@@ -62,9 +62,7 @@ LQRadiotherapyCellKiller<DIM>::LQRadiotherapyCellKiller(AbstractCellPopulation<D
         mUseOer(false),
         mUseConstantOer(false)
 {
-    QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") *
-            GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");
-    mKOer = oxygen_solubility_at_stp * (3.28 * unit::pascals);
+    mKOer = 0.004499758549541243*unit::mole_per_metre_cubed;
 }
 
 template<unsigned DIM>
@@ -176,7 +174,7 @@ void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr 
                     if (mUseConstantOer)
                     {
                         // Set the oxygen solubility at STP and the radioresistant threshold
-                        QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") * GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");  // * 1/Pa * mol/metre_cubed 
+                        QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") * GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");  // 1/Pa * mol/metre_cubed 
                         QPressure radioresistant_threshold = Owen11Parameters::mpOxygenPartialPressureAtHalfMaxCycleRateNormal->GetValue("LQRadiotherapyCellKiller");  // Pa
                         double oer_constant; 
 

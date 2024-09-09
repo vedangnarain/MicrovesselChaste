@@ -697,7 +697,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Change resolution of custom network for better visualisation
-    QLength irregular_grid_spacing = 1.0_um;
+    QLength irregular_grid_spacing = 10.0_um;
 
     // Make a forking network with one daughter vessel longer than the other
     void xTestLongVesselNetworkWithFlow2D()
@@ -1068,7 +1068,7 @@ public:
         }
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=2; h_solver<=3; h_solver++)
+        for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {
             // Set file name
             std::ostringstream strs;
@@ -2743,44 +2743,44 @@ public:
         QLength mid_domain_y = domain_y*0.5;
 
         // Set nodes based on an equilateral network
-        std::shared_ptr<VesselNode<2> > p_node_1 = VesselNode<2>::Create(0.0_um, mid_domain_y+50.0_um);
-        std::shared_ptr<VesselNode<2> > p_node_2 = VesselNode<2>::Create(domain_x, mid_domain_y+50.0_um);
+        std::shared_ptr<VesselNode<2> > p_node_1 = VesselNode<2>::Create(0.0_um, mid_domain_y);
+        std::shared_ptr<VesselNode<2> > p_node_2 = VesselNode<2>::Create(domain_x, mid_domain_y);
 
-        std::shared_ptr<VesselNode<2> > p_node_3 = VesselNode<2>::Create(0.0_um, mid_domain_y);
-        std::shared_ptr<VesselNode<2> > p_node_4 = VesselNode<2>::Create(domain_x, mid_domain_y);
+        // std::shared_ptr<VesselNode<2> > p_node_3 = VesselNode<2>::Create(0.0_um, mid_domain_y);
+        // std::shared_ptr<VesselNode<2> > p_node_4 = VesselNode<2>::Create(domain_x, mid_domain_y);
 
-        std::shared_ptr<VesselNode<2> > p_node_5 = VesselNode<2>::Create(0.0_um, mid_domain_y-50.0_um);
-        std::shared_ptr<VesselNode<2> > p_node_6 = VesselNode<2>::Create(domain_x, mid_domain_y-50.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_5 = VesselNode<2>::Create(0.0_um, mid_domain_y-50.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_6 = VesselNode<2>::Create(domain_x, mid_domain_y-50.0_um);
 
-        std::shared_ptr<VesselNode<2> > p_node_7 = VesselNode<2>::Create(0.0_um, mid_domain_y-60.0_um);
-        std::shared_ptr<VesselNode<2> > p_node_8 = VesselNode<2>::Create(domain_x, mid_domain_y-60.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_7 = VesselNode<2>::Create(0.0_um, mid_domain_y-60.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_8 = VesselNode<2>::Create(domain_x, mid_domain_y-60.0_um);
 
-        std::shared_ptr<VesselNode<2> > p_node_9 = VesselNode<2>::Create(0.0_um, mid_domain_y-70.0_um);
-        std::shared_ptr<VesselNode<2> > p_node_10 = VesselNode<2>::Create(domain_x, mid_domain_y-70.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_9 = VesselNode<2>::Create(0.0_um, mid_domain_y-70.0_um);
+        // std::shared_ptr<VesselNode<2> > p_node_10 = VesselNode<2>::Create(domain_x, mid_domain_y-70.0_um);
 
         // std::shared_ptr<VesselNode<2> > p_node_7 = VesselNode<2>::Create(0.0_um, mid_domain_y);  // add a node at a distance of 100 picometres from the last node to work around glitch of disconnected flow when setting p_node_6 as the output node
 
         // Make segments 
         std::shared_ptr<VesselSegment<2> > p_segment_1 = VesselSegment<2>::Create(p_node_1, p_node_2);
-        std::shared_ptr<VesselSegment<2> > p_segment_2 = VesselSegment<2>::Create(p_node_3, p_node_4);
-        std::shared_ptr<VesselSegment<2> > p_segment_3 = VesselSegment<2>::Create(p_node_5, p_node_6);
-        std::shared_ptr<VesselSegment<2> > p_segment_4 = VesselSegment<2>::Create(p_node_7, p_node_8);
-        std::shared_ptr<VesselSegment<2> > p_segment_5 = VesselSegment<2>::Create(p_node_9, p_node_10);
+        // std::shared_ptr<VesselSegment<2> > p_segment_2 = VesselSegment<2>::Create(p_node_3, p_node_4);
+        // std::shared_ptr<VesselSegment<2> > p_segment_3 = VesselSegment<2>::Create(p_node_5, p_node_6);
+        // std::shared_ptr<VesselSegment<2> > p_segment_4 = VesselSegment<2>::Create(p_node_7, p_node_8);
+        // std::shared_ptr<VesselSegment<2> > p_segment_5 = VesselSegment<2>::Create(p_node_9, p_node_10);
 
         // Make vessels
         std::shared_ptr<Vessel<2> > p_vessel_1 = Vessel<2>::Create(p_segment_1);
-        std::shared_ptr<Vessel<2> > p_vessel_2 = Vessel<2>::Create(p_segment_2);
-        std::shared_ptr<Vessel<2> > p_vessel_3 = Vessel<2>::Create(p_segment_3);
-        std::shared_ptr<Vessel<2> > p_vessel_4 = Vessel<2>::Create(p_segment_4);
-        std::shared_ptr<Vessel<2> > p_vessel_5 = Vessel<2>::Create(p_segment_5);
+        // std::shared_ptr<Vessel<2> > p_vessel_2 = Vessel<2>::Create(p_segment_2);
+        // std::shared_ptr<Vessel<2> > p_vessel_3 = Vessel<2>::Create(p_segment_3);
+        // std::shared_ptr<Vessel<2> > p_vessel_4 = Vessel<2>::Create(p_segment_4);
+        // std::shared_ptr<Vessel<2> > p_vessel_5 = Vessel<2>::Create(p_segment_5);
 
         // Add the vessels to a vessel network
         std::shared_ptr<VesselNetwork<2> > p_network = VesselNetwork<2>::Create();
         p_network->AddVessel(p_vessel_1);
-        p_network->AddVessel(p_vessel_2);
-        p_network->AddVessel(p_vessel_3);
-        p_network->AddVessel(p_vessel_4);
-        p_network->AddVessel(p_vessel_5);
+        // p_network->AddVessel(p_vessel_2);
+        // p_network->AddVessel(p_vessel_3);
+        // p_network->AddVessel(p_vessel_4);
+        // p_network->AddVessel(p_vessel_5);
 
         // No pruning
         std::ostringstream strs;
@@ -2810,6 +2810,92 @@ public:
         QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("User") * GenericParameters::mpGasConcentrationAtStp->GetValue("User");
         QConcentration vessel_oxygen_concentration = oxygen_solubility_at_stp * Owen11Parameters::mpReferencePartialPressure->GetValue("User");
         std::cout << vessel_oxygen_concentration << std::endl; 
+
+        // Set the boundary condition to be the network acting as a Dirichlet source
+        std::shared_ptr<DiscreteContinuumBoundaryCondition<2> > p_vessel_boundary_condition = DiscreteContinuumBoundaryCondition<2>::Create();
+        p_vessel_boundary_condition->SetValue(vessel_oxygen_concentration);  // set the O2 concentration at the source
+        p_vessel_boundary_condition->SetType(BoundaryConditionType::VESSEL_LINE);
+        p_vessel_boundary_condition->SetSource(BoundaryConditionSource::PRESCRIBED);
+
+        // Set up the finite difference solver for oxygen (which handles everything)
+        SimpleLinearEllipticFiniteDifferenceSolver<2> solver;
+        solver.SetGrid(p_grid);
+        solver.SetPde(p_oxygen_pde);
+        solver.AddBoundaryCondition(p_vessel_boundary_condition);
+        solver.SetVesselNetwork(p_network);
+        solver.SetLabel("oxygen");
+        solver.SetFileName("oxygen_solution_0");
+
+        // Run the solver and write the output file (visualise with Paraview; set Filters->Alphabetical->Tube)
+        solver.SetFileHandler(p_output_file_handler);
+        solver.SetWriteSolution(true);
+        solver.Solve();
+        p_network->Write(p_output_file_handler->GetOutputDirectoryFullPath() + "parallel_network_results.vtp");
+
+        // Dump our parameter collection to an xml file and, importantly, clear it for the next test
+        ParameterCollection::Instance()->DumpToFile(p_output_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
+        ParameterCollection::Instance()->Destroy();
+        BaseUnits::Instance()->Destroy();
+        
+    }
+
+    // Make a single line across a PDE grid that acts as a Dirichlet BC in 2D 
+    void xTestSingleLineSource2D()
+    {    
+        // Set up the reference length for the simulation
+        QLength reference_length(1.0_um);
+        BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
+
+        // Set key vessel parameters
+        QLength vessel_length(100.0*unit::microns);
+
+        // Set up the domain parameters
+        QLength domain_x = vessel_length;  // this should extend to the x-position of outlet node
+        QLength domain_y = domain_x;  // should be the same as domain_x to make square domain
+        QLength mid_domain_y = domain_y*0.5;
+
+        // Set nodes based on an equilateral network
+        std::shared_ptr<VesselNode<2> > p_node_1 = VesselNode<2>::Create(0.0_um, mid_domain_y);
+        std::shared_ptr<VesselNode<2> > p_node_2 = VesselNode<2>::Create(domain_x, mid_domain_y);
+
+        // Make segments 
+        std::shared_ptr<VesselSegment<2> > p_segment_1 = VesselSegment<2>::Create(p_node_1, p_node_2);
+
+        // Make vessels
+        std::shared_ptr<Vessel<2> > p_vessel_1 = Vessel<2>::Create(p_segment_1);
+
+        // Add the vessels to a vessel network
+        std::shared_ptr<VesselNetwork<2> > p_network = VesselNetwork<2>::Create();
+        p_network->AddVessel(p_vessel_1);
+
+        // No pruning
+        std::ostringstream strs;
+        strs << std::fixed << std::setprecision( 1 );
+        strs << "TestParallelNetwork/DirichletHaematocrit/";
+        std::string str_directory_name = strs.str();
+        auto p_output_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);         
+        // p_network->RemoveVessel(p_vessel_7,true);
+
+        // Set up the grid for the finite difference solver
+        auto p_grid = RegularGrid<2>::Create();
+        p_grid->SetSpacing(equilateral_grid_spacing);
+        c_vector<unsigned, 3> dimensions;
+        dimensions[0] = unsigned((domain_x)/(equilateral_grid_spacing))+1; // num x
+        dimensions[1] = unsigned((domain_y)/(equilateral_grid_spacing))+1; // num_y
+        dimensions[2] = 1;
+        p_grid->SetDimensions(dimensions);
+
+        // Choose the PDE
+        std::shared_ptr<DiscreteContinuumLinearEllipticPde<2> > p_oxygen_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
+
+        // Set the diffusivity and decay terms
+        p_oxygen_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpOxygenDiffusivity->GetValue("User"));
+        p_oxygen_pde->SetContinuumLinearInUTerm(-1.0*Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
+
+        // Set the O2 concentration value
+        QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("User") * GenericParameters::mpGasConcentrationAtStp->GetValue("User");
+        QConcentration vessel_oxygen_concentration = oxygen_solubility_at_stp * Owen11Parameters::mpReferencePartialPressure->GetValue("User");
+        // std::cout << vessel_oxygen_concentration << std::endl; 
 
         // Set the boundary condition to be the network acting as a Dirichlet source
         std::shared_ptr<DiscreteContinuumBoundaryCondition<2> > p_vessel_boundary_condition = DiscreteContinuumBoundaryCondition<2>::Create();
@@ -16577,7 +16663,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;

@@ -107,13 +107,13 @@ The y-extent for a non-hierarchical network is currently set manually based on t
 #include "CellStateDependentDiscreteSource.hpp"
 #include "SimpleLinearEllipticFiniteDifferenceSolver.hpp"
 // #include "SimpleLinearEllipticFiniteElementSolver.hpp"
-#include "DiscreteContinuumBoundaryCondition.hpp"
+// #include "DiscreteContinuumBoundaryCondition.hpp"
 #include "DiscreteContinuumLinearEllipticPde.hpp"
 #include "RegularGrid.hpp"
 #include "GridCalculator.hpp"
 // #include "CellwiseSourceEllipticPde.hpp"
 // #include "ConstBoundaryCondition.hpp"
-#include "EllipticGrowingDomainPdeModifier.hpp"
+// #include "EllipticGrowingDomainPdeModifier.hpp"
 #include "VesselBasedDiscreteSource.hpp"
 
 // Vessel networks
@@ -151,7 +151,7 @@ The y-extent for a non-hierarchical network is currently set manually based on t
 // #include "CellBasedSimulationArchiver.hpp"
 #include "CellLabel.hpp"
 #include "Owen2011OxygenBasedCellCycleModel.hpp"
-#include "UniformCellCycleModel.hpp"
+// #include "UniformCellCycleModel.hpp"
 // #include "HoneycombMeshGenerator.hpp"
 // #include "CellProliferativeTypesCountWriter.hpp"
 // #include "CellPopulationAreaWriter.hpp"
@@ -232,7 +232,7 @@ public:
         double dimless_domain_size_x = 400.0;  // x-coordinate of output node
         double dimless_domain_size_y = 346.41 + 173.205;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
         unsigned dimless_vessel_length = 100.0;
-        std::vector<std::vector<unsigned> > Order;
+        // std::vector<std::vector<unsigned> > Order;
         std::shared_ptr<VesselNetwork<2> > p_network;
         std::vector<std::shared_ptr<Vessel<2> > > vessels;
         string line2;
@@ -254,7 +254,7 @@ public:
 
         // Define the key blood flow parameters
         QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        double initial_haematocrit = 0.01;
+        double initial_haematocrit = 0.45;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         
         // Initialise error log
@@ -384,7 +384,8 @@ public:
             p_oxygen_solver->SetLabel("oxygen");
             p_oxygen_solver->SetGrid(p_grid);
             // solver.SetFileName("oxygen_solution_0");
-            
+            // p_oxygen_solver->SetWriteSolution(true);
+
             // Set up the VEGF PDE as the O2 one
             auto p_vegf_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
             p_vegf_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpVegfDiffusivity->GetValue("User"));
@@ -594,19 +595,20 @@ public:
             p_rt_killer->SetOerAlphaMin(1.0);
             p_rt_killer->SetOerBetaMax(3.25);
             p_rt_killer->SetOerBetaMin(1.0);
-            p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);
+            // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);
+            p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
             p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
             p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
             p_rt_killer->UseOer(true);
 
             // Set Up the dosage times
-            std::vector<QTime > rt_times;
-            rt_times.push_back(3600.0*24.0*unit::seconds);
-            rt_times.push_back(3600.0*48.0*unit::seconds);
-            rt_times.push_back(3600.0*72.0*unit::seconds);
-            p_rt_killer->SetTimeOfRadiation(rt_times);
-            p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
-            simulator.AddCellKiller(p_rt_killer);
+            // std::vector<QTime > rt_times;
+            // rt_times.push_back(3600.0*24.0*unit::seconds);
+            // rt_times.push_back(3600.0*48.0*unit::seconds);
+            // rt_times.push_back(3600.0*72.0*unit::seconds);
+            // p_rt_killer->SetTimeOfRadiation(rt_times);
+            // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
+            // simulator.AddCellKiller(p_rt_killer);
 
             // If needed
             // boost::shared_ptr<RandomCellKiller<2> > p_cell_killer(new RandomCellKiller<2>(p_cell_population.get(), 0.01));
@@ -644,9 +646,9 @@ public:
             simulator.SetSamplingTimestepMultiple(1);
             // simulator.SetDt(1);  // simulation time step in hours
             simulator.SetDt(1.0);
-            // simulator.SetEndTime(24*7);  // end time in hours
+            simulator.SetEndTime(24*1.0);  // end time in hours
             // simulator.SetEndTime(24);  // end time in hours
-            simulator.SetEndTime(96.0);
+            // simulator.SetEndTime(2.0);
             simulator.Solve();
 
             // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
@@ -676,7 +678,7 @@ public:
 
         // Choose the vascular parameters
         unsigned NumberOfSeedPoints = 60;  // change this to select which Voronoi architecture to use: 25, 100, 400
-        // unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
+        unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
         double dimless_domain_size_x = 1105.0; 
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as Mantegazza network
         // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
@@ -684,17 +686,17 @@ public:
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.35;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.10;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
         // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
-        // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
+        unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
-        unsigned ToBeKilled = 0;  // number to kill
+        // unsigned ToBeKilled = 0;  // number to kill
         
         // Match this based on cell size
-        QLength cell_grid_spacing = 40.0_um;  // the simulation time gets quite long if you reduce the resolution further
+        QLength cell_grid_spacing = 10.0_um;
 
         // Seed the random number generator
         RandomNumberGenerator::Instance()->Reseed(12345);
@@ -716,7 +718,7 @@ public:
         ////////////////////////////////////////////////////////////////
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=1; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -725,17 +727,14 @@ public:
             QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
             QLength domain_side_length_y(dimless_domain_size_y * unit::microns);
             std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
-            // std::vector<std::vector<double> > QuotientMatrixMean(max_n_mu,std::vector<double>(ToBeKilled+1));
-            // std::vector<std::vector<double> > QuotientMatrixAggregate(max_n_mu,std::vector<double>(ToBeKilled+1,0.0));
-            std::vector<std::vector<unsigned> > Order;
-            // double PerfusionQuotient;
+            // std::vector<std::vector<unsigned> > Order;
 
             // Run simulations with different layouts (could be used to compute some average later)
             // std::vector<unsigned> broken_selections = {2, 9, 11, 49, 69, 80, 93, 99};
             // std::vector<unsigned> broken_selections = {99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=424;layout<=424; layout++)   
+            for (unsigned layout=1;layout<=NumberOfLayouts; layout++)   
             { 
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
@@ -743,8 +742,6 @@ public:
                 // Read the network layout from a file
                 VesselNetworkGenerator<2> network_generator;
                 std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
-                // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
-                // std::ifstream in("/home/narain/Desktop/Scripts/generate_new_voronoi_network/output/"+to_string(NumberOfSeedPoints)+"SeedPoints/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 std::vector<std::vector<double> > rEdgesMatrix;
                 string line;
                 while (std::getline(in, line)) 
@@ -851,8 +848,8 @@ public:
                 VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
                 
                 // Prune all vessels up to specified dose 
-                // for(unsigned KilledVessels=0; KilledVessels < ToBeKilled; KilledVessels++)
-                // { 
+                for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
+                { 
                 //     // Remove the shortest vessel
                 //     vessels = p_network->GetVessels();
                 //     QLength minimum_length = 1000.0_um;
@@ -878,8 +875,8 @@ public:
                 //     }
                 //     p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
                     
-                //     // Display status message
-                //     std::cout << "Now killed " << KilledVessels+1 << " vessels." << std::endl;  
+                    // Display status message
+                    std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
 
                 // }                       
 
@@ -950,349 +947,376 @@ public:
                     // // Display status message
                     // std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
 
-                    // Set filename
-                    std::stringstream selection_stream;
-                    std::stringstream kill_stream;
-                    selection_stream << std::fixed << std::setprecision(0) << to_string(layout);                    
-                    // kill_stream << std::fixed << std::setprecision(0) << KilledVessels;
-                    kill_stream << std::fixed << std::setprecision(0) << ToBeKilled;                      
-                    std::string selection_string = selection_stream.str();
-                    std::string kill_string = kill_stream.str();                    
-                    std::string file_name = network_name + solver_name + "/Selection" + selection_string + "/Kills" + kill_string;                        
-                    std::string str_directory_name = file_name;
-                    std::cout << str_directory_name << std::endl;
-                    auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
+                // Set filename
+                std::stringstream selection_stream;
+                std::stringstream kill_stream;
+                selection_stream << std::fixed << std::setprecision(0) << to_string(layout);                    
+                kill_stream << std::fixed << std::setprecision(0) << KilledVessels;
+                // kill_stream << std::fixed << std::setprecision(0) << ToBeKilled;                      
+                std::string selection_string = selection_stream.str();
+                std::string kill_string = kill_stream.str();                    
+                std::string file_name = network_name + solver_name + "/Selection" + selection_string + "/Kills" + kill_string;                        
+                std::string str_directory_name = file_name;
+                std::cout << str_directory_name << std::endl;
+                auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
 
-                    // Set up the grid for the finite difference solver
-                    auto p_grid = RegularGrid<2>::Create();
-                    p_grid->SetSpacing(cell_grid_spacing);
-                    c_vector<unsigned, 3> dimensions;
-                    dimensions[0] = unsigned((domain_side_length_x)/(cell_grid_spacing))+2; // num x
-                    dimensions[1] = unsigned((domain_side_length_y)/(cell_grid_spacing))+2; // num_y
-                    dimensions[2] = 1;
-                    p_grid->SetDimensions(dimensions);
+                // Set up the grid for the finite difference solver
+                auto p_grid = RegularGrid<2>::Create();
+                p_grid->SetSpacing(cell_grid_spacing);
+                c_vector<unsigned, 3> dimensions;
+                dimensions[0] = unsigned((domain_side_length_x)/(cell_grid_spacing))+2; // num x
+                dimensions[1] = unsigned((domain_side_length_y)/(cell_grid_spacing))+2; // num_y
+                dimensions[2] = 1;
+                p_grid->SetDimensions(dimensions);
 
-                    // Set up the cell populations
-                    std::shared_ptr<GridCalculator<2> > p_grid_calc = GridCalculator<2>::Create();
-                    p_grid_calc->SetGrid(p_grid);
-                    std::shared_ptr<Owen11CellPopulationGenerator<2> > p_cell_population_genenerator = Owen11CellPopulationGenerator<2>::Create();
-                    p_cell_population_genenerator->SetGridCalculator(p_grid_calc);
-                    p_cell_population_genenerator->SetVesselNetwork(p_network);
-                    QLength tumour_radius(10000.0 * unit::microns);  // just make it bigger than the domain to ensure all cells are tumour cells 
-                    p_cell_population_genenerator->SetTumourRadius(tumour_radius);
-                    std::shared_ptr<CaBasedCellPopulation<2> > p_cell_population = p_cell_population_genenerator->Update();
+                // Set up the cell populations
+                std::shared_ptr<GridCalculator<2> > p_grid_calc = GridCalculator<2>::Create();
+                p_grid_calc->SetGrid(p_grid);
+                std::shared_ptr<Owen11CellPopulationGenerator<2> > p_cell_population_genenerator = Owen11CellPopulationGenerator<2>::Create();
+                p_cell_population_genenerator->SetGridCalculator(p_grid_calc);
+                p_cell_population_genenerator->SetVesselNetwork(p_network);
+                QLength tumour_radius(10000.0 * unit::microns);  // just make it bigger than the domain to ensure all cells are tumour cells 
+                p_cell_population_genenerator->SetTumourRadius(tumour_radius);
+                std::shared_ptr<CaBasedCellPopulation<2> > p_cell_population = p_cell_population_genenerator->Update();
 
-                    // Set up the PDE
-                    auto p_oxygen_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
-                    p_oxygen_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpOxygenDiffusivity->GetValue("User"));
-                    // p_oxygen_pde->SetContinuumLinearInUTerm(-1.0*Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
-                    auto p_cell_oxygen_sink = CellBasedDiscreteSource<2>::Create();  // Set the cell terms
-                    // p_cell_oxygen_sink->SetLinearInUConsumptionRatePerCell(13.0);
-                    p_cell_oxygen_sink->SetLinearInUConsumptionRatePerCell(Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
-                    p_oxygen_pde->AddDiscreteSource(p_cell_oxygen_sink);
 
-                    // Set up the discrete source
-                    auto p_vessel_oxygen_source = VesselBasedDiscreteSource<2>::Create();
-                    QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("User") *
-                            GenericParameters::mpGasConcentrationAtStp->GetValue("User");
-                    QConcentration vessel_oxygen_concentration = oxygen_solubility_at_stp *
-                            Owen11Parameters::mpReferencePartialPressure->GetValue("User");
-                    p_vessel_oxygen_source->SetReferenceConcentration(vessel_oxygen_concentration);
-                    p_vessel_oxygen_source->SetVesselPermeability(Owen11Parameters::mpVesselOxygenPermeability->GetValue("User"));
-                    p_vessel_oxygen_source->SetReferenceHaematocrit(Owen11Parameters::mpInflowHaematocrit->GetValue("User"));
-                    p_oxygen_pde->AddDiscreteSource(p_vessel_oxygen_source);
 
-                    // Set up the finite difference solver for oxygen (which handles everything)
-                    auto p_oxygen_solver = SimpleLinearEllipticFiniteDifferenceSolver<2>::Create();
-                    p_oxygen_solver->SetPde(p_oxygen_pde);
-                    p_oxygen_solver->SetLabel("oxygen");
-                    p_oxygen_solver->SetGrid(p_grid);
-                    // solver.SetFileName("oxygen_solution_0");
 
-                    // Set up the VEGF PDE as we set the O2 one (currently turned off)
-                    auto p_vegf_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
-                    p_vegf_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpVegfDiffusivity->GetValue("User"));
-                    // p_vegf_pde->SetIsotropicDiffusionConstant(0.0);
-                    p_vegf_pde->SetContinuumLinearInUTerm(-Owen11Parameters::mpVegfDecayRate->GetValue("User"));
+
+
+
+
+                // Choose the PDE
+                auto p_oxygen_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
+                            
+                // Set the diffusivity and decay terms
+                p_oxygen_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpOxygenDiffusivity->GetValue("User"));
+                // p_oxygen_pde->SetContinuumLinearInUTerm(-1.0*Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
+
+
+                // Set up the PDE
+                auto p_cell_oxygen_sink = CellBasedDiscreteSource<2>::Create();  // Set the cell terms
+                p_cell_oxygen_sink->SetLinearInUConsumptionRatePerCell(Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
+                p_oxygen_pde->AddDiscreteSource(p_cell_oxygen_sink);
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // Set up the discrete source
+                auto p_vessel_oxygen_source = VesselBasedDiscreteSource<2>::Create();
+                QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("User") *
+                        GenericParameters::mpGasConcentrationAtStp->GetValue("User");
+                QConcentration vessel_oxygen_concentration = oxygen_solubility_at_stp *
+                        Owen11Parameters::mpReferencePartialPressure->GetValue("User");
+                p_vessel_oxygen_source->SetReferenceConcentration(vessel_oxygen_concentration);
+                p_vessel_oxygen_source->SetVesselPermeability(Owen11Parameters::mpVesselOxygenPermeability->GetValue("User"));
+                p_vessel_oxygen_source->SetReferenceHaematocrit(Owen11Parameters::mpInflowHaematocrit->GetValue("User"));
+                p_oxygen_pde->AddDiscreteSource(p_vessel_oxygen_source);
+
+                // Set up the finite difference solver for oxygen (which handles everything)
+                auto p_oxygen_solver = SimpleLinearEllipticFiniteDifferenceSolver<2>::Create();
+                p_oxygen_solver->SetPde(p_oxygen_pde);
+                p_oxygen_solver->SetLabel("oxygen");
+                p_oxygen_solver->SetGrid(p_grid);
+                // solver.SetFileName("oxygen_solution_0");
+                // solver.AddBoundaryCondition(p_vessel_boundary_condition);
+                // solver.SetVesselNetwork(p_network);
+
+                // Set up the VEGF PDE as we set the O2 one (currently turned off)
+                auto p_vegf_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
+                p_vegf_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpVegfDiffusivity->GetValue("User"));
+                // p_vegf_pde->SetIsotropicDiffusionConstant(0.0);
+                p_vegf_pde->SetContinuumLinearInUTerm(-Owen11Parameters::mpVegfDecayRate->GetValue("User"));
+            
+                // Set up a map for different release rates depending on cell type. Also include a threshold intracellular VEGF below which there is no release (currently turned off)
+                auto p_normal_and_quiescent_cell_source = CellStateDependentDiscreteSource<2>::Create();  // initialise the source (which combines normal and quiescent cells)
+                std::map<unsigned, QConcentrationFlowRate > normal_and_quiescent_cell_rates;  // map to store secretion rates
+                std::map<unsigned, QConcentration > normal_and_quiescent_cell_rate_thresholds;  // map to store secretion thresholds
+                MAKE_PTR(QuiescentCancerCellMutationState, p_quiescent_cancer_state);
+                MAKE_PTR(WildTypeCellMutationState, p_normal_cell_state);
+                normal_and_quiescent_cell_rates[p_normal_cell_state->GetColour()] = Owen11Parameters::mpCellVegfSecretionRate->GetValue("User");  // set the rate for normal cells
+                normal_and_quiescent_cell_rate_thresholds[p_normal_cell_state->GetColour()] = 0.27*unit::mole_per_metre_cubed;  // set the threshold for normal cells
+                // normal_and_quiescent_cell_rates[p_normal_cell_state->GetColour()] = 0.00000000000000000001;  // set the rate for normal cells
+                // normal_and_quiescent_cell_rate_thresholds[p_normal_cell_state->GetColour()] = 1000000_M;  // set the threshold for normal cells
+                normal_and_quiescent_cell_rates[p_quiescent_cancer_state->GetColour()] = Owen11Parameters::mpCellVegfSecretionRate->GetValue("User");  // set the rate for quiescent cells
+                normal_and_quiescent_cell_rate_thresholds[p_quiescent_cancer_state->GetColour()] = 0_M;  // set the threshold for quiescent cells
+                // normal_and_quiescent_cell_rates[p_quiescent_cancer_state->GetColour()] = 0.00000000000000000001;  // set the rate for quiescent cells
+                // normal_and_quiescent_cell_rate_thresholds[p_quiescent_cancer_state->GetColour()] = 1000000_M;  // set the threshold for quiescent cells
+                p_normal_and_quiescent_cell_source->SetStateRateMap(normal_and_quiescent_cell_rates);  // configure the map
+                p_normal_and_quiescent_cell_source->SetLabelName("VEGF");  // set the label for the source
+                p_normal_and_quiescent_cell_source->SetStateRateThresholdMap(normal_and_quiescent_cell_rate_thresholds);
+                // p_vegf_pde->AddDiscreteSource(p_normal_and_quiescent_cell_source);
+
+                // Print the cell types and their colours
+                MAKE_PTR(CancerCellMutationState, p_cancer_state);
+                // MAKE_PTR(StemCellProliferativeType, p_stem_state);
+                std::cout << "Normal state has Legacy Cell type " <<  p_normal_cell_state->GetColour() << std::endl;
+                std::cout << "Cancer state has Legacy Cell type " <<  p_cancer_state->GetColour() << std::endl;
+                std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_quiescent_cancer_state->GetColour() << std::endl;
+                // std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_stem_state->GetColour() << std::endl;
+
+                // Add a vessel related VEGF sink (currently turned off)
+                auto p_vessel_vegf_sink = VesselBasedDiscreteSource<2>::Create();
+                p_vessel_vegf_sink->SetReferenceConcentration(0.0_M);
+                p_vessel_vegf_sink->SetVesselPermeability(Owen11Parameters::mpVesselVegfPermeability->GetValue("User"));
+                // p_vessel_vegf_sink->SetVesselPermeability(0.0);
+                // p_vegf_pde->AddDiscreteSource(p_vessel_vegf_sink);
+
+                // Set up a finite difference solver as before for the VEGF
+                auto p_vegf_solver = SimpleLinearEllipticFiniteDifferenceSolver<2>::Create();
+                p_vegf_solver->SetPde(p_vegf_pde);
+                p_vegf_solver->SetLabel("VEGF_Extracellular");  // set the label for the external field
+                p_vegf_solver->SetGrid(p_grid);
                 
-                    // Set up a map for different release rates depending on cell type. Also include a threshold intracellular VEGF below which there is no release (currently turned off)
-                    auto p_normal_and_quiescent_cell_source = CellStateDependentDiscreteSource<2>::Create();  // initialise the source (which combines normal and quiescent cells)
-                    std::map<unsigned, QConcentrationFlowRate > normal_and_quiescent_cell_rates;  // map to store secretion rates
-                    std::map<unsigned, QConcentration > normal_and_quiescent_cell_rate_thresholds;  // map to store secretion thresholds
-                    MAKE_PTR(QuiescentCancerCellMutationState, p_quiescent_cancer_state);
-                    MAKE_PTR(WildTypeCellMutationState, p_normal_cell_state);
-                    normal_and_quiescent_cell_rates[p_normal_cell_state->GetColour()] = Owen11Parameters::mpCellVegfSecretionRate->GetValue("User");  // set the rate for normal cells
-                    normal_and_quiescent_cell_rate_thresholds[p_normal_cell_state->GetColour()] = 0.27*unit::mole_per_metre_cubed;  // set the threshold for normal cells
-                    // normal_and_quiescent_cell_rates[p_normal_cell_state->GetColour()] = 0.00000000000000000001;  // set the rate for normal cells
-                    // normal_and_quiescent_cell_rate_thresholds[p_normal_cell_state->GetColour()] = 1000000_M;  // set the threshold for normal cells
-                    normal_and_quiescent_cell_rates[p_quiescent_cancer_state->GetColour()] = Owen11Parameters::mpCellVegfSecretionRate->GetValue("User");  // set the rate for quiescent cells
-                    normal_and_quiescent_cell_rate_thresholds[p_quiescent_cancer_state->GetColour()] = 0_M;  // set the threshold for quiescent cells
-                    // normal_and_quiescent_cell_rates[p_quiescent_cancer_state->GetColour()] = 0.00000000000000000001;  // set the rate for quiescent cells
-                    // normal_and_quiescent_cell_rate_thresholds[p_quiescent_cancer_state->GetColour()] = 1000000_M;  // set the threshold for quiescent cells
-                    p_normal_and_quiescent_cell_source->SetStateRateMap(normal_and_quiescent_cell_rates);  // configure the map
-                    p_normal_and_quiescent_cell_source->SetLabelName("VEGF");  // set the label for the source
-                    p_normal_and_quiescent_cell_source->SetStateRateThresholdMap(normal_and_quiescent_cell_rate_thresholds);
-                    // p_vegf_pde->AddDiscreteSource(p_normal_and_quiescent_cell_source);
+                // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
+                unsigned max_max_iter = 10000; 
+                unsigned max_iter = 1000;  // 1000 
+                double prev_max_difference = 0.0;
+                double tolerance2 = 1.e-10;
+                std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
+                std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
+                for(unsigned idx=0;idx<max_max_iter;idx++)
+                {
+                    // Run the solvers (order of calculators matters!)
+                    p_viscosity_calculator->Calculate();
+                    p_impedance_calculator->Calculate();
+                    flow_solver.SetUp();
+                    flow_solver.Solve();
+                    p_abstract_haematocrit_solver->Calculate();
 
-                    // Print the cell types and their colours
-                    MAKE_PTR(CancerCellMutationState, p_cancer_state);
-                    // MAKE_PTR(StemCellProliferativeType, p_stem_state);
-                    std::cout << "Normal state has Legacy Cell type " <<  p_normal_cell_state->GetColour() << std::endl;
-                    std::cout << "Cancer state has Legacy Cell type " <<  p_cancer_state->GetColour() << std::endl;
-                    std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_quiescent_cancer_state->GetColour() << std::endl;
-                    // std::cout << "Quiescent cancer state has Legacy Cell type " <<  p_stem_state->GetColour() << std::endl;
-
-                    // Add a vessel related VEGF sink (currently turned off)
-                    auto p_vessel_vegf_sink = VesselBasedDiscreteSource<2>::Create();
-                    p_vessel_vegf_sink->SetReferenceConcentration(0.0_M);
-                    p_vessel_vegf_sink->SetVesselPermeability(Owen11Parameters::mpVesselVegfPermeability->GetValue("User"));
-                    // p_vessel_vegf_sink->SetVesselPermeability(0.0);
-                    // p_vegf_pde->AddDiscreteSource(p_vessel_vegf_sink);
-
-                    // Set up a finite difference solver as before for the VEGF
-                    auto p_vegf_solver = SimpleLinearEllipticFiniteDifferenceSolver<2>::Create();
-                    p_vegf_solver->SetPde(p_vegf_pde);
-                    p_vegf_solver->SetLabel("VEGF_Extracellular");  // set the label for the external field
-                    p_vegf_solver->SetGrid(p_grid);
-                    
-                    // Set up an iteration to solve the non-linear problem (haematocrit problem is coupled to flow problem via viscosity/impedance)
-                    unsigned max_max_iter = 10000; 
-                    unsigned max_iter = 1000;  // 1000 
-                    double prev_max_difference = 0.0;
-                    double tolerance2 = 1.e-10;
-                    std::vector<VesselSegmentPtr<2> > segments = p_network->GetVesselSegments();
-                    std::vector<double> previous_haematocrit(segments.size(), double(initial_haematocrit));
-                    for(unsigned idx=0;idx<max_max_iter;idx++)
+                    // Get the residual
+                    double max_difference = 0.0;
+                    double h_for_max = 0.0;
+                    double prev_for_max = 0.0;
+                    for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
                     {
-                        // Run the solvers (order of calculators matters!)
-                        p_viscosity_calculator->Calculate();
-                        p_impedance_calculator->Calculate();
-                        flow_solver.SetUp();
-                        flow_solver.Solve();
-                        p_abstract_haematocrit_solver->Calculate();
-
-                        // Get the residual
-                        double max_difference = 0.0;
-                        double h_for_max = 0.0;
-                        double prev_for_max = 0.0;
-                        for(unsigned jdx=0;jdx<segments.size();jdx++)  // for all the segments in the network
+                        // Set segments with no flow to be dead (this is only problem for inlet really)
+                        if (fabs(segments[jdx]->GetFlowProperties()->GetFlowRate()) <= 1.e-16 *unit::metre_cubed_per_second)
                         {
-                            // Set segments with no flow to be dead (this is only problem for inlet really)
-                            if (fabs(segments[jdx]->GetFlowProperties()->GetFlowRate()) <= 1.e-16 *unit::metre_cubed_per_second)
-                            {
-                                segments[jdx]->GetFlowProperties()->SetViscosity(0.0);
-                                segments[jdx]->GetFlowProperties()->SetImpedance(0.0);
-                                segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
-                            }    
-                            double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
-                            double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
-                            if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
-                            {
-                                max_difference = difference;
-                                h_for_max = current_haematocrit;
-                                prev_for_max = previous_haematocrit[jdx];
-                            }
-                            previous_haematocrit[jdx] = current_haematocrit;
+                            segments[jdx]->GetFlowProperties()->SetViscosity(0.0);
+                            segments[jdx]->GetFlowProperties()->SetImpedance(0.0);
+                            segments[jdx]->GetFlowProperties()->SetHaematocrit(0.0);
+                        }    
+                        double current_haematocrit = segments[jdx]->GetFlowProperties()->GetHaematocrit();  // get haematocrit
+                        double difference = std::abs(current_haematocrit - previous_haematocrit[jdx]);  // difference in haematocrit
+                        if(difference>max_difference)  // get the max. diff b/w prev. and current H, the value of H, and the prev. H
+                        {
+                            max_difference = difference;
+                            h_for_max = current_haematocrit;
+                            prev_for_max = previous_haematocrit[jdx];
                         }
-                        std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
-
-                        // Print the final or intermediary convergence results
-                        if(max_difference<=tolerance2)  
-                        {
-                            std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
-                            // broken_solver = 0;
-                            break;
-                        }
-                        else
-                        {
-                            std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
-                            if(idx%100==0)
-                            {
-                                std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
-                                std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
-                                p_network->Write(output_file);
-                            }
-                        }
-
-                        // If there is no convergence after all the iterations, print the error message.
-                        if(idx>=max_iter-1 && max_difference >= prev_max_difference)
-                        {
-                            std::cout << "Problem encountered in " << str_directory_name << std::endl;
-                            error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
-                            broken_solver = 1;
-                            break;
-                        }                                
-                        prev_max_difference = max_difference;
+                        previous_haematocrit[jdx] = current_haematocrit;
                     }
+                    std::cout << "H at max difference: " << h_for_max << ", Prev H at max difference:" << prev_for_max << std::endl;
 
-                    // If simulation doesn't converge, move on to next layout and log problem 
-                    if (broken_solver == 1)
+                    // Print the final or intermediary convergence results
+                    if(max_difference<=tolerance2)  
                     {
-                        broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
-                        broken_layouts_file << str_directory_name << " \n"; 
-                        broken_layouts_file.close();
-
-                        // Move onto the next selection
+                        std::cout << "Converged after: " << idx << " iterations. " <<  std::endl;
+                        // broken_solver = 0;
                         break;
                     }
+                    else
+                    {
+                        std::cout << "Max Difference at iter: " << idx << " is " << max_difference << std::endl;
+                        if(idx%100==0)
+                        {
+                            // std::string file_suffix = "IntermediateHaematocrit_" + std::to_string(idx) + ".vtp";
+                            // std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append(file_suffix);
+                            // p_network->Write(output_file);
+                        }
+                    }
 
-                    // Set up the angiogenesis solver (runs on deactivated VEGF function but seems to be necessary for main solver)
-                    std::shared_ptr<AngiogenesisSolver<2> > p_angiogenesis_solver = AngiogenesisSolver<2>::Create();
-                    std::shared_ptr<Owen2011SproutingRule<2> > p_sprouting_rule = Owen2011SproutingRule<2>::Create();
-                    std::shared_ptr<Owen2011MigrationRule<2> > p_migration_rule = Owen2011MigrationRule<2>::Create();
-                    p_angiogenesis_solver->SetMigrationRule(p_migration_rule);
-                    p_angiogenesis_solver->SetSproutingRule(p_sprouting_rule);
-                    p_sprouting_rule->SetDiscreteContinuumSolver(p_vegf_solver);
-                    p_migration_rule->SetDiscreteContinuumSolver(p_vegf_solver);
-                    p_angiogenesis_solver->SetVesselGridCalculator(p_grid_calc);
-                    p_angiogenesis_solver->SetVesselNetwork(p_network);
-                    
-                    // Initialise the solver
-                    auto p_microvessel_solver = MicrovesselSolver<2>::Create();
-                    p_microvessel_solver->SetVesselNetwork(p_network);
-                    p_microvessel_solver->SetOutputFrequency(5_h);
-                    // p_microvessel_solver->SetOutputFileHandler(p_file_handler);
-                    p_microvessel_solver->AddDiscreteContinuumSolver(p_oxygen_solver);
-                    p_microvessel_solver->AddDiscreteContinuumSolver(p_vegf_solver);
-                    p_microvessel_solver->SetAngiogenesisSolver(p_angiogenesis_solver);
+                    // If there is no convergence after all the iterations, print the error message.
+                    if(idx>=max_iter-1 && max_difference >= prev_max_difference)
+                    {
+                        std::cout << "Problem encountered in " << str_directory_name << std::endl;
+                        error_log << "\n Problem encountered in " << str_directory_name << std::endl; 
+                        broken_solver = 1;
+                        break;
+                    }                                
+                    prev_max_difference = max_difference;
+                }
 
-                    // Specifies which extracellular fields to update based on PDE
-                    boost::shared_ptr<MicrovesselSimulationModifier<2> > p_microvessel_modifier =
-                    boost::shared_ptr<MicrovesselSimulationModifier<2> >(new MicrovesselSimulationModifier<2> ());
-                    p_microvessel_modifier->SetMicrovesselSolver(p_microvessel_solver);
-                    std::vector<std::string> update_labels;
-                    update_labels.push_back("oxygen");
-                    p_microvessel_modifier->SetCellDataUpdateLabels(update_labels);
+                // If simulation doesn't converge, move on to next layout and log problem 
+                if (broken_solver == 1)
+                {
+                    broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                    broken_layouts_file << str_directory_name << " \n"; 
+                    broken_layouts_file.close();
 
-                    ////////////////////////////////////////////////////////////////
-                    // Cells
-                    ////////////////////////////////////////////////////////////////
+                    // Move onto the next selection
+                    break;
+                }
 
-                    // The full simulation is run as a typical Cell Based Chaste simulation
-                    OnLatticeSimulation<2> simulator(*p_cell_population);
-                    simulator.AddSimulationModifier(p_microvessel_modifier);
+                // Set up the angiogenesis solver (runs on deactivated VEGF function but seems to be necessary for main solver)
+                std::shared_ptr<AngiogenesisSolver<2> > p_angiogenesis_solver = AngiogenesisSolver<2>::Create();
+                std::shared_ptr<Owen2011SproutingRule<2> > p_sprouting_rule = Owen2011SproutingRule<2>::Create();
+                std::shared_ptr<Owen2011MigrationRule<2> > p_migration_rule = Owen2011MigrationRule<2>::Create();
+                p_angiogenesis_solver->SetMigrationRule(p_migration_rule);
+                p_angiogenesis_solver->SetSproutingRule(p_sprouting_rule);
+                p_sprouting_rule->SetDiscreteContinuumSolver(p_vegf_solver);
+                p_migration_rule->SetDiscreteContinuumSolver(p_vegf_solver);
+                p_angiogenesis_solver->SetVesselGridCalculator(p_grid_calc);
+                p_angiogenesis_solver->SetVesselNetwork(p_network);
+                
+                // Initialise the solver
+                auto p_microvessel_solver = MicrovesselSolver<2>::Create();
+                p_microvessel_solver->SetVesselNetwork(p_network);
+                p_microvessel_solver->SetOutputFrequency(5_h);
+                // p_microvessel_solver->SetOutputFileHandler(p_file_handler);
+                p_microvessel_solver->AddDiscreteContinuumSolver(p_oxygen_solver);
+                p_microvessel_solver->AddDiscreteContinuumSolver(p_vegf_solver);
+                p_microvessel_solver->SetAngiogenesisSolver(p_angiogenesis_solver);
 
-                    // Add a killer to remove apoptotic cells from the grid
-                    boost::shared_ptr<ApoptoticCellKiller<2> > p_apoptotic_cell_killer(new ApoptoticCellKiller<2>(p_cell_population.get()));
-                    simulator.AddCellKiller(p_apoptotic_cell_killer);
-        
-                    // Add a LQ RT killer
-                    boost::shared_ptr<LQRadiotherapyCellKiller<2> > p_rt_killer =
-                    boost::shared_ptr<LQRadiotherapyCellKiller<2> >(new LQRadiotherapyCellKiller<2> (p_cell_population.get()));
-                    std::vector<QTime > rt_times;
-                    rt_times.push_back(3600.0*1.0*unit::seconds);
-                    // rt_times.push_back(3600.0*5.0*unit::seconds);
-                    // rt_times.push_back(3600.0*10.0*unit::seconds);
-                    // rt_times.push_back(3600.0*15.0*unit::seconds);
-                    // rt_times.push_back(3600.0*24.0*unit::seconds);
-                    // rt_times.push_back(3600.0*48.0*unit::seconds);
-                    // rt_times.push_back(3600.0*72.0*unit::seconds);
-                    p_rt_killer->SetTimeOfRadiation(rt_times);
-                    // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
-                    p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
-                    // p_rt_killer->SetDoseInjected(4.0*unit::gray);  // modify dose here
+                // Specifies which extracellular fields to update based on PDE
+                boost::shared_ptr<MicrovesselSimulationModifier<2> > p_microvessel_modifier =
+                boost::shared_ptr<MicrovesselSimulationModifier<2> >(new MicrovesselSimulationModifier<2> ());
+                p_microvessel_modifier->SetMicrovesselSolver(p_microvessel_solver);
+                std::vector<std::string> update_labels;
+                update_labels.push_back("oxygen");
+                p_microvessel_modifier->SetCellDataUpdateLabels(update_labels);
 
-                    // Set up the radiobiological parameters common to all models
-                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // K_OER
-                    double alpha_max = 0.3;
-                    double beta_max = 0.3;
-                    p_rt_killer->UseOer(true);  // turn OER on and off here
-                    p_rt_killer->UseConstantOer(true);  // true = Lewin OER, false = Scott OER
+                ////////////////////////////////////////////////////////////////
+                // Cells
+                ////////////////////////////////////////////////////////////////
 
-                    // If OER is on, set the common radiosensitivity parameters
-                    p_rt_killer->SetAlphaMax(alpha_max * unit::per_gray);
-                    p_rt_killer->SetBetaMax(beta_max * unit::per_gray_squared);
+                // The full simulation is run as a typical Cell Based Chaste simulation
+                OnLatticeSimulation<2> simulator(*p_cell_population);
+                simulator.AddSimulationModifier(p_microvessel_modifier);
 
-                    // If we're using the Scott OER model                    
-                    p_rt_killer->SetOerAlphaMax(1.75);
-                    p_rt_killer->SetOerAlphaMin(1.0);
-                    p_rt_killer->SetOerBetaMax(3.25);
-                    p_rt_killer->SetOerBetaMin(1.0);
+                // Add a killer to remove apoptotic cells from the grid
+                boost::shared_ptr<ApoptoticCellKiller<2> > p_apoptotic_cell_killer(new ApoptoticCellKiller<2>(p_cell_population.get()));
+                simulator.AddCellKiller(p_apoptotic_cell_killer);
+    
+                // Add a LQ RT killer
+                boost::shared_ptr<LQRadiotherapyCellKiller<2> > p_rt_killer =
+                boost::shared_ptr<LQRadiotherapyCellKiller<2> >(new LQRadiotherapyCellKiller<2> (p_cell_population.get()));
+                std::vector<QTime > rt_times;
+                rt_times.push_back(3600.0*0.0*unit::seconds);
+                // rt_times.push_back(3600.0*5.0*unit::seconds);
+                // rt_times.push_back(3600.0*10.0*unit::seconds);
+                // rt_times.push_back(3600.0*15.0*unit::seconds);
+                // rt_times.push_back(3600.0*24.0*unit::seconds);
+                // rt_times.push_back(3600.0*48.0*unit::seconds);
+                // rt_times.push_back(3600.0*72.0*unit::seconds);
+                p_rt_killer->SetTimeOfRadiation(rt_times);
+                // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
+                p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
+                // p_rt_killer->SetDoseInjected(4.0*unit::gray);  // modify dose here
 
-                    // If OER is off, set the radiosensitivity parameters for different cells explicitly
-                    p_rt_killer->SetCancerousRadiosensitivity(alpha_max * unit::per_gray, beta_max * unit::per_gray_squared);  // alpha, beta
-                    // p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);  // no normal cells in simulation
-                    p_rt_killer->SetNormalRadiosensitivity(0.0 * unit::per_gray, 0.0 * unit::per_gray_squared);  // no normal cells in simulation
+                // Set up the radiobiological parameters common to all models
+                double alpha_max = 0.3;
+                double alpha_beta_ratio = 3.0;
+                double beta_max = alpha_max/alpha_beta_ratio;
+                p_rt_killer->UseOer(true);  // turn OER on and off here
+                p_rt_killer->UseConstantOer(false);  // true = Lewin OER, false = Scott OER
 
-                    // Add the RT cell killer
-                    simulator.AddCellKiller(p_rt_killer);
+                // If OER is on, set the common radiosensitivity parameters
+                p_rt_killer->SetAlphaMax(alpha_max * unit::per_gray);
+                p_rt_killer->SetBetaMax(beta_max * unit::per_gray_squared);
 
-                    // If needed
-                    // boost::shared_ptr<RandomCellKiller<2> > p_cell_killer(new RandomCellKiller<2>(p_cell_population.get(), 0.01));
-                    // simulator.AddCellKiller(p_cell_killer);
-                    // for (typename AbstractCellPopulation<2>::Iterator cell_iter = p_cell_population.get()->Begin(); cell_iter != p_cell_population.get()->End(); ++cell_iter)
-                    // {
-                    //     // CheckAndLabelSingleCellForApoptosis(*cell_iter);
-                    //     std::cout << "hi cell" << (*cell_iter)->GetCellData()->GetItem("oxygen") << std::endl;
+                // If we're using the Scott OER model                    
+                // p_rt_killer->SetOerConstant(3.28*unit::mole_per_metre_cubed);  // K_OER
+                p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
+                p_rt_killer->SetOerAlphaMax(1.75);
+                p_rt_killer->SetOerAlphaMin(1.0);
+                p_rt_killer->SetOerBetaMax(3.25);
+                p_rt_killer->SetOerBetaMin(1.0);
 
-                    //     //  std::cout <<  BaseUnits::Instance()->GetReferenceConcentrationScale() << std::endl;
+                // If OER is off, set the radiosensitivity parameters for different cells explicitly
+                p_rt_killer->SetCancerousRadiosensitivity(alpha_max * unit::per_gray, beta_max * unit::per_gray_squared);  // alpha, beta
+                // p_rt_killer->SetNormalRadiosensitivity(0.15 * unit::per_gray, 0.05 * unit::per_gray_squared);  // no normal cells in simulation
+                p_rt_killer->SetNormalRadiosensitivity(0.0 * unit::per_gray, 0.0 * unit::per_gray_squared);  // no normal cells in simulation
+
+                // Add the RT cell killer
+                simulator.AddCellKiller(p_rt_killer);
+
+                // If needed
+                // boost::shared_ptr<RandomCellKiller<2> > p_cell_killer(new RandomCellKiller<2>(p_cell_population.get(), 0.01));
+                // simulator.AddCellKiller(p_cell_killer);
+                // for (typename AbstractCellPopulation<2>::Iterator cell_iter = p_cell_population.get()->Begin(); cell_iter != p_cell_population.get()->End(); ++cell_iter)
+                // {
+                //     // CheckAndLabelSingleCellForApoptosis(*cell_iter);
+                //     std::cout << "hi cell" << (*cell_iter)->GetCellData()->GetItem("oxygen") << std::endl;
+
+                //     //  std::cout <<  BaseUnits::Instance()->GetReferenceConcentrationScale() << std::endl;
 
 
-                    //     //     double oxygen_concentration;
+                //     //     double oxygen_concentration;
 
-                    //     // std::cout << "hi cell" << oxygen_concentration << std::endl;
-                    // }
+                //     // std::cout << "hi cell" << oxygen_concentration << std::endl;
+                // }
 
-                    // Add another modifier for updating cell cycle quantities.
-                    boost::shared_ptr<Owen2011TrackingModifier<2> > p_owen11_tracking_modifier(new Owen2011TrackingModifier<2>);
-                    simulator.AddSimulationModifier(p_owen11_tracking_modifier);
+                // Add another modifier for updating cell cycle quantities.
+                boost::shared_ptr<Owen2011TrackingModifier<2> > p_owen11_tracking_modifier(new Owen2011TrackingModifier<2>);
+                simulator.AddSimulationModifier(p_owen11_tracking_modifier);
 
-                    // Print the average oxygenation
-                    // std::vector<double> solution = p_oxygen_solver->GetSolution();
-                    // double average_oxygen = 0.0;
-                    // for(unsigned jdx=0;jdx<solution.size();jdx++)
-                    // {
-                    //     average_oxygen += solution[jdx];
-                    // }
-                    // average_oxygen /= double(solution.size());
-                    // std::cout << "Average oxygen: " << average_oxygen << std::endl;
+                // Print the average oxygenation
+                // std::vector<double> solution = p_oxygen_solver->GetSolution();
+                // double average_oxygen = 0.0;
+                // for(unsigned jdx=0;jdx<solution.size();jdx++)
+                // {
+                //     average_oxygen += solution[jdx];
+                // }
+                // average_oxygen /= double(solution.size());
+                // std::cout << "Average oxygen: " << average_oxygen << std::endl;
 
-                    // Set up the simulation time and run it
-                    simulator.SetOutputDirectory(str_directory_name);
-                    // simulator.SetSamplingTimestepMultiple(10);  // get sample every x steps of Dt (multiple*dt = time between s)
-                    simulator.SetSamplingTimestepMultiple(1);
-                    // simulator.SetDt(1);  // simulation time step in hours
-                    simulator.SetDt(1.0);
-                    // simulator.SetEndTime(24*7);  // end time in hours
-                    // simulator.SetEndTime(24);  // end time in hours
-                    // simulator.SetEndTime(24.0*7.0);  // one week
-                    simulator.SetEndTime(24.0*7.0);  // one week
-                    simulator.Solve();
+                // Set up the simulation time and run it
+                simulator.SetOutputDirectory(str_directory_name);
+                // simulator.SetSamplingTimestepMultiple(10);  // get sample every x steps of Dt (multiple*dt = time between s)
+                simulator.SetSamplingTimestepMultiple(1);
+                // simulator.SetDt(1);  // simulation time step in hours
+                simulator.SetDt(1.0);
+                // simulator.SetEndTime(24.0*7.0);  // one week
+                simulator.SetEndTime(1.0*1.0);  // five hours
+                simulator.Solve();
 
-                    // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
-                    std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append("FinalHaematocrit.vtp");
-                    p_network->Write(output_file);
+                // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
+                // std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append("FinalHaematocrit.vtp");
+                // p_network->Write(output_file);
 
-                    // // Remove the shortest vessel
-                    // vessels = p_network->GetVessels();
-                    // QLength minimum_length = 1000.0_um;
-                    // unsigned int minimum_index = 0;
-                    // for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
-                    // {
-                    //     // Exclude inlets and outlets
-                    //     if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
-                    //     || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
-                    //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
-                    //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
-                    //     {   
-                    //         // Get the current segment's length
-                    //         QLength current_length = vessels[vessel_index]->GetLength();
-                            
-                    //         // If the current length is less than the minimum length, record the new minimum
-                    //         if (current_length < minimum_length)
-                    //         {
-                    //             minimum_length = current_length;
-                    //             minimum_index = vessel_index;
-                    //         }                  
-                    //     }
-                    // }
-                    // p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
+                // Remove the shortest vessel
+                vessels = p_network->GetVessels();
+                QLength minimum_length = 1000.0_um;
+                unsigned int minimum_index = 0;
+                for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
+                {
+                    // Exclude inlets and outlets
+                    if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                    || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                    || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                    || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                    {   
+                        // Get the current segment's length
+                        QLength current_length = vessels[vessel_index]->GetLength();
+                        
+                        // If the current length is less than the minimum length, record the new minimum
+                        if (current_length < minimum_length)
+                        {
+                            minimum_length = current_length;
+                            minimum_index = vessel_index;
+                        }                  
+                    }
+                }
+                p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
 
-                    // Dump our parameter collection to an xml file and, importantly, clear it for the next test
-                    ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
-                    ParameterCollection::Instance()->Destroy();
-                    BaseUnits::Instance()->Destroy();
-                    SimulationTime::Instance()->Destroy();
+                // Dump our parameter collection to an xml file and, importantly, clear it for the next test
+                ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
+                ParameterCollection::Instance()->Destroy();
+                BaseUnits::Instance()->Destroy();
+                SimulationTime::Instance()->Destroy();
+                SimulationTime::Instance()->SetStartTime(0.0);
+
                 // }
                 // If simulation doesn't converge, move on to next layout
                 if (broken_solver == 1)
@@ -1301,7 +1325,8 @@ public:
                 }
             }
         }
-
+        }
+        
         // Print the error log
         std::string error_message = error_log.str();
         std::cout << error_message << std::endl; 
@@ -1363,7 +1388,7 @@ public:
             QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
             QLength domain_side_length_y(dimless_domain_size_y * unit::microns);
             std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
-            std::vector<std::vector<unsigned> > Order;
+            // std::vector<std::vector<unsigned> > Order;
 
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
@@ -1789,8 +1814,8 @@ public:
                     p_rt_killer->SetOerAlphaMin(1.0);
                     p_rt_killer->SetOerBetaMax(3.25);
                     p_rt_killer->SetOerBetaMin(1.0);
-                    p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
-                    // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.00_Pa);  // adjust the radiobiological threshold here
+                    // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
+                    p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
                     p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
                     p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
                     p_rt_killer->UseOer(true);  // turn OER on and off here
@@ -1946,7 +1971,7 @@ public:
             QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
             QLength domain_side_length_y(dimless_domain_size_y * unit::microns);
             std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
-            std::vector<std::vector<unsigned> > Order;
+            // std::vector<std::vector<unsigned> > Order;
 
             // Set up flag for broken solver
             unsigned broken_solver = 0;
@@ -2393,8 +2418,8 @@ public:
             p_rt_killer->SetOerAlphaMin(1.0);
             p_rt_killer->SetOerBetaMax(3.25);
             p_rt_killer->SetOerBetaMin(1.0);
-            p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
-            // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.00_Pa);  // adjust the radiobiological threshold here
+            // p_rt_killer->SetOerConstant(oxygen_solubility_at_stp * 3.28_Pa);  // adjust the radiobiological threshold here
+            p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
             p_rt_killer->SetAlphaMax(0.3 * unit::per_gray);
             p_rt_killer->SetBetaMax(0.03 * unit::per_gray_squared);
             p_rt_killer->UseOer(true);  // turn OER on and off here
