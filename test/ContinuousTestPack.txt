@@ -66,6 +66,7 @@ simulation/flow/TestVesselBug.hpp
 simulation/flow/TestHexNodeBug.hpp
 simulation/flow/TestForkingNodeBug.hpp
 simulation/flow/TestPriesConvergenceBug.hpp
+simulation/flow/TestOxygenConsumptionBug.hpp
 simulation/flow/structural_adaptation/TestStructuralAdaptationSolver.hpp
 simulation/flow/haematocrit/TestAlarcon03HaematocritSolver.hpp
 simulation/flow/haematocrit/TestBetteridgeHaematocritSolver.hpp
