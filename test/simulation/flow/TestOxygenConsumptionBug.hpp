@@ -39,9 +39,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 
-This script contains two tests to generate a simple oxygen field from a vessel bisecting a domain, with the consumption represented by (a) a sink term at all points (b) a sink term for individual cells.
+This script contains two tests to generate an oxygen field from a source in the middle of a domain, with the consumption represented by (a) a uniform sink term (b) a sink term for individual cells (population uniformly distributed). It looks like the consumption rate, despite being set to the same value in simulations (a) and (b), produces different oxygen distributions. The lowest difference is obtained assuming a grid/cell size of ~1 um.
 
-17/9/24
+18/9/24
 
 */
 
@@ -208,7 +208,7 @@ std::shared_ptr<VesselSegment<2> > p_segment_1 = VesselSegment<2>::Create(p_node
 std::shared_ptr<Vessel<2> > p_vessel_1 = Vessel<2>::Create(p_segment_1);
 
 // Set grid spacing
-QLength grid_spacing = 10.0_um;  // the simulation time gets quite long if you reduce the resolution further
+QLength grid_spacing = 10.0_um;
 
 class TestHaematocritSolvers : public CxxTest::TestSuite
 {

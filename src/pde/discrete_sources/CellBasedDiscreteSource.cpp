@@ -95,8 +95,7 @@ std::vector<QRate > CellBasedDiscreteSource<DIM>::GetLinearInUValues()
     for(unsigned idx=0; idx<cell_densities.size(); idx++)
     {
         values[idx] = values[idx] + mCellLinearInUValue * cell_densities[idx];
-        std::cout << "idx=" << idx << " cell_densities[idx]=" << cell_densities[idx]  << " mCellLinearInUValue=" << mCellLinearInUValue << " values[idx]=" << values[idx] << std::endl;
-
+        // std::cout << "idx=" << idx << " cell_densities[idx]=" << cell_densities[idx]  << " values[idx]=" << values[idx] << std::endl;
     }
     return values;
 }
