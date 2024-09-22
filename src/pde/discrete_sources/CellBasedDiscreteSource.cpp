@@ -33,7 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-// Includes standard library
+// Include standard library for debugging messages
 using namespace std;
 
 #include "CellBasedDiscreteSource.hpp"
@@ -88,14 +88,17 @@ std::vector<QRate > CellBasedDiscreteSource<DIM>::GetLinearInUValues()
     {
         EXCEPTION("A regular grid is required for this type of source");
     }
-
+    // QLength reference_length = this->mpDensityMap->GetGridCalculator()->GetGrid()->GetReferenceLengthScale();
+    // QVolume ref_area = reference_length*reference_length;
+    // std::cout << "reference_length=" << reference_length << std::endl;
+    // std::cout << "ref_volume=" << ref_volume << std::endl;
     std::vector<QRate > values(this->mpDensityMap->GetGridCalculator()->GetGrid()->GetNumberOfCells(),
             0.0*unit::per_second);
     std::vector<double> cell_densities = this->mpDensityMap->rGetCellDensity(true);
     for(unsigned idx=0; idx<cell_densities.size(); idx++)
     {
         values[idx] = values[idx] + mCellLinearInUValue * cell_densities[idx];
-        // std::cout << "idx=" << idx << " cell_densities[idx]=" << cell_densities[idx]  << " values[idx]=" << values[idx] << std::endl;
+        // std::cout << "PDE grid point=" << idx << " cell_densities[idx]=" << cell_densities[idx]  << " values[idx]=" << values[idx] << std::endl;
     }
     return values;
 }

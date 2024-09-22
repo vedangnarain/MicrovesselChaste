@@ -123,9 +123,19 @@ class LQRadiotherapyCellKiller : public AbstractCellKiller<DIM>
     bool mUseOer;
 
     /**
-     * Whether to use a fixed oxygen enhancement ratio for hypoxic cells (as opposed to a concentration-dependent ratio)
+     * Whether to use a fixed oxygen enhancement ratio for hypoxic cells as in Lewin et al. (2018)
      */
-    bool mUseConstantOer;
+    bool mUseLewinModel;
+
+    /**
+     * Whether to use a concentration-dependent oxygen enhancement ratio as in Scott et al. (2016)
+     */
+    bool mUseScottModel;
+
+    /**
+     * Whether to use a concentration-dependent oxygen enhancement ratio as in Wouters and Brown (1997)
+     */
+    bool mUseWoutersModel;
 
 private:
 
@@ -259,10 +269,22 @@ public:
     void UseOer(bool useOer);
 
     /**
-     * Whether to use a fixed OER for hypoxic cells (as opposed to a concentration-dependent OER)
-     * @param useOer Whether to use OER
+     * Whether to use a fixed oxygen enhancement ratio for hypoxic cells as in Lewin et al. (2018)
+     * @param useLewinModel Whether to use the model
      */
-    void UseConstantOer(bool useConstantOer);
+    void UseLewinModel(bool useLewinModel);
+
+    /**
+     * Whether to use a concentration-dependent oxygen enhancement ratio as in Scott et al. (2016)
+     * @param useScottModel Whether to use the model
+     */
+    void UseScottModel(bool useScottModel);
+
+    /**
+     * Whether to use a concentration-dependent oxygen enhancement ratio as in Wouters and Brown (1997)
+     * @param useWoutersModel Whether to use the model
+     */
+    void UseWoutersModel(bool useWoutersModel);
 
 };
 

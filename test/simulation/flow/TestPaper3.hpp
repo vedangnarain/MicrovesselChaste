@@ -686,7 +686,8 @@ public:
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.10;  // conks out somewhere between 0.35 and 0.4
+        // double initial_haematocrit = 0.1;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.02;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
@@ -694,9 +695,10 @@ public:
         // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
         unsigned ToBeKilled = 100;  // number to kill
-        
+        // unsigned MaxKills = (3*NumberOfSeedPoints)-6;  // number to kill
+
         // Match this based on cell size
-        QLength cell_grid_spacing = 10.0_um;
+        QLength cell_grid_spacing = 20.0_um;
 
         // Seed the random number generator
         RandomNumberGenerator::Instance()->Reseed(12345);
@@ -718,7 +720,7 @@ public:
         ////////////////////////////////////////////////////////////////
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        for (unsigned h_solver=1; h_solver<=1; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -850,7 +852,6 @@ public:
                 // Prune all vessels up to specified dose 
                 for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
                 { 
-
                     // Display status message
                     std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
 
@@ -1187,25 +1188,36 @@ public:
                     // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
                     p_rt_killer->SetDoseInjected(2.0*unit::gray);  // modify dose here
                     // p_rt_killer->SetDoseInjected(4.0*unit::gray);  // modify dose here
-
-                    // Set up the radiobiological parameters common to all models
-                    double alpha_max = 0.3;
-                    double alpha_beta_ratio = 3.0;
-                    double beta_max = alpha_max/alpha_beta_ratio;
                     p_rt_killer->UseOer(true);  // turn OER on and off here
-                    p_rt_killer->UseConstantOer(false);  // true = Lewin OER, false = Scott OER
 
-                    // If OER is on, set the common radiosensitivity parameters
+                    // Set up the radiobiological parameters for the Lewin model
+                    // p_rt_killer->UseLewinModel(true);
+                    // double alpha_max = 0.3;
+                    // double alpha_beta_ratio = 10.0;
+
+                    // Set up the radiobiological parameters for the Scott model
+                    // p_rt_killer->UseScottModel(true);
+                    // // double alpha_max = 0.2895*3  // Scott code
+                    // double alpha_max = 0.3  // Grogan paper
+                    // double alpha_beta_ratio = 10.0;
+                    // // double alpha_beta_ratio = 8.64;  // alternative value
+                    // p_rt_killer->SetOerAlphaMax(1.75);
+                    // p_rt_killer->SetOerBetaMax(3.25);
+
+                    // Set up the radiobiological parameters for the Wouters model
+                    p_rt_killer->UseWoutersModel(true);
+                    double alpha_max = 0.2;
+                    double alpha_beta_ratio = 2.2;
+                    p_rt_killer->SetOerAlphaMax(2.5);
+                    p_rt_killer->SetOerBetaMax(3.0);
+
+                    // If we're using OER                    
+                    double beta_max = alpha_max/alpha_beta_ratio;
+                    p_rt_killer->SetOerAlphaMin(1.0);
+                    p_rt_killer->SetOerBetaMin(1.0);
+                    p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
                     p_rt_killer->SetAlphaMax(alpha_max * unit::per_gray);
                     p_rt_killer->SetBetaMax(beta_max * unit::per_gray_squared);
-
-                    // If we're using the Scott OER model                    
-                    // p_rt_killer->SetOerConstant(3.28*unit::mole_per_metre_cubed);  // K_OER
-                    p_rt_killer->SetOerConstant(0.004499758549541243*unit::mole_per_metre_cubed);  // K_OER (3.28 mmHg)
-                    p_rt_killer->SetOerAlphaMax(1.75);
-                    p_rt_killer->SetOerAlphaMin(1.0);
-                    p_rt_killer->SetOerBetaMax(3.25);
-                    p_rt_killer->SetOerBetaMin(1.0);
 
                     // If OER is off, set the radiosensitivity parameters for different cells explicitly
                     p_rt_killer->SetCancerousRadiosensitivity(alpha_max * unit::per_gray, beta_max * unit::per_gray_squared);  // alpha, beta
@@ -1254,6 +1266,32 @@ public:
                     // simulator.SetEndTime(24.0*7.0);  // one week
                     simulator.SetEndTime(1.0*1.0);  // five hours
                     simulator.Solve();
+
+                    // Print the average oxygenation
+                    // std::vector<double> solution = p_oxygen_solver->GetSolution();
+                    // double average_oxygen = 0.0;
+                    // for(unsigned jdx=0;jdx<solution.size();jdx++)
+                    // {
+                    //     average_oxygen += solution[jdx];
+                    // }
+                    // average_oxygen /= double(solution.size());
+                    // std::cout << "Median oxygen: " << average_oxygen << std::endl;
+
+                    // // Print the median oxygenation
+                    std::vector<double> solution = p_oxygen_solver->GetSolution();
+                    std::sort(solution.begin(), solution.end());
+
+                    double median_oxygen;
+                    size_t size = solution.size();
+                    if (size % 2 == 0) {
+                        // Even number of elements
+                        median_oxygen = (solution[size / 2 - 1] + solution[size / 2]) / 2.0;
+                    } else {
+                        // Odd number of elements
+                        median_oxygen = solution[size / 2];
+                    }
+
+                    std::cout << "Median oxygen: " << median_oxygen << std::endl;
 
                     // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
                     // std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append("FinalHaematocrit.vtp");

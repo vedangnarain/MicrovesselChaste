@@ -60,7 +60,9 @@ LQRadiotherapyCellKiller<DIM>::LQRadiotherapyCellKiller(AbstractCellPopulation<D
         mAlphaMax(0.3 * unit::per_gray),
         mBetaMax(0.03 * unit::per_gray_squared),
         mUseOer(false),
-        mUseConstantOer(false)
+        mUseLewinModel(false),
+        mUseScottModel(false),
+        mUseWoutersModel(false)
 {
     mKOer = 0.004499758549541243*unit::mole_per_metre_cubed;
 }
@@ -132,9 +134,21 @@ void LQRadiotherapyCellKiller<DIM>::UseOer(bool useOer)
 }
 
 template<unsigned DIM>
-void LQRadiotherapyCellKiller<DIM>::UseConstantOer(bool useConstantOer)
+void LQRadiotherapyCellKiller<DIM>::UseLewinModel(bool useLewinModel)
 {
-    mUseConstantOer = useConstantOer;
+    mUseLewinModel = useLewinModel;
+}
+
+template<unsigned DIM>
+void LQRadiotherapyCellKiller<DIM>::UseScottModel(bool useScottModel)
+{
+    mUseScottModel = useScottModel;
+}
+
+template<unsigned DIM>
+void LQRadiotherapyCellKiller<DIM>::UseWoutersModel(bool useWoutersModel)
+{
+    mUseWoutersModel = useWoutersModel;
 }
 
 template<unsigned DIM>
@@ -171,7 +185,7 @@ void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr 
                     QConcentration oxygen = pCell->GetCellData()->GetItem("oxygen")*BaseUnits::Instance()->GetReferenceConcentrationScale();  // mol/metre_cubed
                     
                     // If we want to use a constant OER for hypoxic cells
-                    if (mUseConstantOer)
+                    if (mUseLewinModel)
                     {
                         // Set the oxygen solubility at STP and the radioresistant threshold
                         QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("LQRadiotherapyCellKiller") * GenericParameters::mpGasConcentrationAtStp->GetValue("LQRadiotherapyCellKiller");  // 1/Pa * mol/metre_cubed 
@@ -198,12 +212,24 @@ void LQRadiotherapyCellKiller<DIM>::CheckAndLabelSingleCellForApoptosis(CellPtr 
                         QPerAbsorbedDoseSquared beta = mBetaMax / (oer_constant * oer_constant);
                         death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
                     }
-                    else
+                    else if (mUseScottModel)
                     {
+                        // Scott model
                         double oer_alpha = (mOerAlphaMax - mOerAlphaMin) * mKOer / (oxygen + mKOer) + mOerAlphaMin;
                         double oer_beta = (mOerBetaMax - mOerBetaMin) * mKOer / (oxygen + mKOer) + mOerBetaMin;
                         QPerAbsorbedDose alpha = mAlphaMax / oer_alpha;
                         QPerAbsorbedDoseSquared beta = mBetaMax / (oer_beta * oer_beta);
+                        death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
+                    }
+                    else if (mUseWoutersModel)
+                    {
+                        // Wouters and Brown (1997)
+                        double oer_alpha = (oxygen*mOerAlphaMax + mKOer)/(oxygen + mKOer);
+                        double oer_beta = (oxygen*mOerBetaMax + mKOer)/(oxygen + mKOer);                        
+                        double alpha_h = mAlphaMax/ mOerAlphaMax;
+                        double beta_h = mBetaMax/ (mOerBetaMax * mOerBetaMax);
+                        QPerAbsorbedDose alpha = alpha_h * oer_alpha;
+                        QPerAbsorbedDoseSquared beta = beta_h * oer_beta * oer_beta;
                         death_probability = 1.0 - exp(-alpha * mDose - beta * mDose * mDose);
                     }
                 }

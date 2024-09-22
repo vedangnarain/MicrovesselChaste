@@ -49,6 +49,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GeometryTools.hpp"
 #include "UnitCollection.hpp"
 
+
+// Include standard library for debugging messages
+using namespace std;
+
 template<unsigned DIM>
 DensityMap<DIM>::DensityMap() :
         mVesselSurfaceAreaDensity(),
@@ -735,11 +739,19 @@ const std::vector<double>& DensityMap<DIM>::rGetCellDensity(bool update)
         mDimensionlessCellDensity = std::vector<double>(this->mpGridCalculator->GetGrid()->GetNumberOfCells(), 0.0);
         std::vector<std::vector<CellPtr> > cell_map = this->mpGridCalculator->rGetCellMap();
         std::vector<double> grid_volumes = this->mpGridCalculator->GetGrid()->rGetCellVolumes(true, true);
+        // std::cout << "cell_map=" << cell_map << std::endl;
+        // std::cout << "grid_volumes=" << grid_volumes << std::endl;
+        // std::cout << "grid_volumes[idx]=" << grid_volumes.size() << std::endl;
         for(unsigned idx=0; idx<cell_map.size();idx++)
         {
             for (unsigned jdx = 0; jdx < cell_map[idx].size(); jdx++)
             {
-                mDimensionlessCellDensity[idx] += 1.0/grid_volumes[idx];
+                // std::cout << "cell associated with current grid point=" << jdx << std::endl;
+                // std::cout << "oxy_grid ID=" << idx << std::endl;
+                // std::cout << "oxy_grid_volumes[idx]=" << grid_volumes[idx] << std::endl;
+                // mDimensionlessCellDensity[idx] += 1.0/grid_volumes[idx];
+                mDimensionlessCellDensity[idx] += 1.0;
+                // std::cout << "mDimensionlessCellDensity[idx]=" << mDimensionlessCellDensity[idx] << std::endl;
             }
         }
         return mDimensionlessCellDensity;
