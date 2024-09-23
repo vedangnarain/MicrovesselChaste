@@ -687,15 +687,15 @@ public:
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
         // double initial_haematocrit = 0.1;  // conks out somewhere between 0.35 and 0.4
-        double initial_haematocrit = 0.02;  // conks out somewhere between 0.35 and 0.4
+        double initial_haematocrit = 0.3;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
         // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
         // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
-        unsigned ToBeKilled = 100;  // number to kill
-        // unsigned MaxKills = (3*NumberOfSeedPoints)-6;  // number to kill
+        // unsigned ToBeKilled = 100;  // number to kill
+        unsigned MaxKills = (3*NumberOfSeedPoints)-6;  // number to kill
 
         // Match this based on cell size
         QLength cell_grid_spacing = 20.0_um;
@@ -720,7 +720,7 @@ public:
         ////////////////////////////////////////////////////////////////
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=1; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -736,7 +736,7 @@ public:
             // std::vector<unsigned> broken_selections = {99};
             unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=1;layout<=NumberOfLayouts; layout++)   
+            for (unsigned layout=4;layout<=NumberOfLayouts; layout++)   
             { 
                 // Set up flag for broken solver
                 unsigned broken_solver = 0;
@@ -850,7 +850,7 @@ public:
                 VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
                 
                 // Prune all vessels up to specified dose 
-                for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
+                for(unsigned KilledVessels=0; KilledVessels < MaxKills; KilledVessels++)
                 { 
                     // Display status message
                     std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
@@ -927,7 +927,6 @@ public:
                     std::stringstream kill_stream;
                     selection_stream << std::fixed << std::setprecision(0) << to_string(layout);                    
                     kill_stream << std::fixed << std::setprecision(0) << KilledVessels;
-                    // kill_stream << std::fixed << std::setprecision(0) << ToBeKilled;                      
                     std::string selection_string = selection_stream.str();
                     std::string kill_string = kill_stream.str();                    
                     std::string file_name = network_name + solver_name + "/Selection" + selection_string + "/Kills" + kill_string;                        
@@ -954,39 +953,16 @@ public:
                     p_cell_population_genenerator->SetTumourRadius(tumour_radius);
                     std::shared_ptr<CaBasedCellPopulation<2> > p_cell_population = p_cell_population_genenerator->Update();
 
-
-
-
-
-
-
-
                     // Choose the PDE
                     auto p_oxygen_pde = DiscreteContinuumLinearEllipticPde<2>::Create();
                                 
                     // Set the diffusivity and decay terms
                     p_oxygen_pde->SetIsotropicDiffusionConstant(Owen11Parameters::mpOxygenDiffusivity->GetValue("User"));
-                    // p_oxygen_pde->SetContinuumLinearInUTerm(-1.0*Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
-
-
-                    // Set up the PDE
                     auto p_cell_oxygen_sink = CellBasedDiscreteSource<2>::Create();  // Set the cell terms
                     p_cell_oxygen_sink->SetLinearInUConsumptionRatePerCell(Owen11Parameters::mpCellOxygenConsumptionRate->GetValue("User"));
                     p_oxygen_pde->AddDiscreteSource(p_cell_oxygen_sink);
 
-
-
-
-
-
-
-
-
-
-
-
-
-                    // Set up the discrete source
+                    // Set up the vessel source
                     auto p_vessel_oxygen_source = VesselBasedDiscreteSource<2>::Create();
                     QSolubility oxygen_solubility_at_stp = Secomb04Parameters::mpOxygenVolumetricSolubility->GetValue("User") *
                             GenericParameters::mpGasConcentrationAtStp->GetValue("User");
@@ -1277,21 +1253,22 @@ public:
                     // average_oxygen /= double(solution.size());
                     // std::cout << "Median oxygen: " << average_oxygen << std::endl;
 
-                    // // Print the median oxygenation
+                    // Print the median oxygenation
                     std::vector<double> solution = p_oxygen_solver->GetSolution();
                     std::sort(solution.begin(), solution.end());
-
                     double median_oxygen;
-                    size_t size = solution.size();
-                    if (size % 2 == 0) {
+                    size_t solution_size = solution.size();
+                    if (solution_size % 2 == 0) 
+                    {
                         // Even number of elements
-                        median_oxygen = (solution[size / 2 - 1] + solution[size / 2]) / 2.0;
-                    } else {
+                        median_oxygen = (solution[solution_size / 2 - 1] + solution[solution_size / 2]) / 2.0;
+                    } 
+                    else 
+                    {
                         // Odd number of elements
-                        median_oxygen = solution[size / 2];
+                        median_oxygen = solution[solution_size / 2];
                     }
-
-                    std::cout << "Median oxygen: " << median_oxygen << std::endl;
+                    std::cout << "Median oxygen (nM): " << median_oxygen << std::endl;
 
                     // Write the output network file (visualise with Paraview: set Filters->Alphabetical->Tube)
                     // std::string output_file = p_file_handler->GetOutputDirectoryFullPath().append("FinalHaematocrit.vtp");
@@ -1333,9 +1310,24 @@ public:
                     // }
                     // p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
 
+                    // Dump our parameter collection to an xml file and, importantly, clear it for the next test
+                    ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
+                    ParameterCollection::Instance()->Destroy();
+                    BaseUnits::Instance()->Destroy();
+                    SimulationTime::Instance()->Destroy();
+                    SimulationTime::Instance()->SetStartTime(0.0);
 
-
-
+                    // If there is no oxygen in the network, don't prune any more vessels
+                    double total_oxygen = 0.0;
+                    for (unsigned i = 0; i < solution_size; ++i) 
+                    {
+                        total_oxygen += solution[i];
+                    }
+                    std::cout << "Total oxygen (nM): " << total_oxygen << std::endl;
+                    if (total_oxygen < tolerance2)
+                    {
+                        break;
+                    }
 
                     // Remove the shortest or lowest-flow vessel
                     vessels = p_network->GetVessels();
@@ -1406,28 +1398,6 @@ public:
                     // Remove the selected vessel
                     p_network->RemoveVessel(vessels[vessel_to_remove], true);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    // Dump our parameter collection to an xml file and, importantly, clear it for the next test
-                    ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
-                    ParameterCollection::Instance()->Destroy();
-                    BaseUnits::Instance()->Destroy();
-                    SimulationTime::Instance()->Destroy();
-                    SimulationTime::Instance()->SetStartTime(0.0);
-
-                    // }
                     // If simulation doesn't converge, move on to next layout
                     if (broken_solver == 1)
                     {
