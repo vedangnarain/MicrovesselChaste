@@ -16114,7 +16114,7 @@ public:
 
     // Choose key parameters
     unsigned NumberOfSeedPoints = 60;  // change this to select which Voronoi architecture to use: 25, 100, 400
-    unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
+    unsigned NumberOfLayouts = 4;  // number of different point layouts to run simulations with (add an extra selection for a demo)
 
 	// unsigned selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
     // unsigned NHet = 5;  // number of heterogeneity selections (upto 5)
@@ -16663,7 +16663,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -16672,35 +16672,35 @@ public:
         // Set network in filename
         std::string network_name = "TestVoronoiNetwork/";
 
-        // Create the output file for the PQs
-        std::ofstream outfile;
-        // outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt");
-        // outfile.close();
+        // Create the output file for the broken layouts
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/home/narain/Desktop/testoutput/broken_layouts.txt");
-        // broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
+        // broken_layouts_file.open("/home/narain/Desktop/testoutput/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
         QLength reference_length(1.0_um);
         BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
 
+        // Match this based on cell size
+        QLength cell_grid_spacing = 20.0_um;
+
         // Define the key parameters
         double dimless_domain_size_x = 1105.0; 
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as Mantegazza network
-        // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
         // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
-        // double initial_haematocrit = 0.45;        
-        double initial_haematocrit = 0.10;
+        // QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
+        QDynamicViscosity viscosity = Owen11Parameters::mpPlasmaViscosity->GetValue();
+        // double initial_haematocrit = 0.10;
+        double initial_haematocrit = 0.3;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
-        // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
         // double percToKill = 0.2;  // percentage of vessels to kill
         // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
-        unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
+        // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
         // unsigned ToBeKilled = 100;  // number to kill
+        unsigned MaxKills = (3*NumberOfSeedPoints)-6;  // number to kill
 
         // Run the simulation with different solvers of interest
         for (unsigned h_solver=3; h_solver<=3; h_solver++)
@@ -16712,17 +16712,14 @@ public:
             QLength domain_side_length_x(dimless_domain_size_x * unit::microns);
             QLength domain_side_length_y(dimless_domain_size_y * unit::microns);
             std::vector<std::shared_ptr<Vessel<2> > >::iterator vessel_iterator;
-            // std::vector<std::vector<double> > QuotientMatrixMean(max_n_mu,std::vector<double>(ToBeKilled+1));
-            // std::vector<std::vector<double> > QuotientMatrixAggregate(max_n_mu,std::vector<double>(ToBeKilled+1,0.0));
             std::vector<std::vector<unsigned> > Order;
-            // double PerfusionQuotient;
 
             // Run simulations with different layouts (could be used to compute some average later)
             // std::vector<unsigned> broken_selections = {2, 9, 11, 49, 69, 80, 93, 99};
             // std::vector<unsigned> broken_selections = {99};
-            unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
+            // unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
+            for (unsigned layout=134;layout <= NumberOfLayouts; layout++)   
             { 
 
                 // Set up flag for broken solver
@@ -16730,7 +16727,8 @@ public:
                 
                 // Read the network layout from a file
                 VesselNetworkGenerator<2> network_generator;
-                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 // std::ifstream in("/home/narain/Desktop/Scripts/generate_new_voronoi_network/output/"+to_string(NumberOfSeedPoints)+"SeedPoints/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 std::vector<std::vector<double> > rEdgesMatrix;
@@ -16839,7 +16837,7 @@ public:
                                     if (counter==0)
                                     {           
                                         (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsInputNode(true);
-                                        (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(5530.0*unit::pascals);
+                                        (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
                                     }
                                     else if (counter != vessels.size() - 1)
                                     {
@@ -16855,7 +16853,7 @@ public:
                                     if (counter==vessels.size()-1)
                                     {    
                                         (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsOutputNode(true);
-                                        (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(2000.0*unit::pascals);
+                                        (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
                                     }
                                     // (*vessel_iterator)->SetRadius(inlet_vessel_radius);
                                     else if (counter != vessels.size() - 1)
@@ -16874,7 +16872,7 @@ public:
                                     if (counter==0)
                                     {    
                                         (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsInputNode(true);
-                                        (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(5530.0*unit::pascals);
+                                        (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
                                     }
                                     else if (counter != vessels.size() - 1)
                                     {
@@ -16891,7 +16889,7 @@ public:
                                     if (counter==vessels.size()-1)
                                     {   
                                         (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsOutputNode(true);
-                                        (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(2000.0*unit::pascals);
+                                        (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
                                     }
                                     // (*vessel_iterator)->SetRadius(inlet_vessel_radius);
                                     else if (counter != vessels.size() - 1)
@@ -16974,29 +16972,30 @@ public:
                         //     p_abstract_haematocrit_solver = p_haematocrit_solver;     
                         // }
 
-                        // Set up the viscosity solver
-                        auto p_viscosity_calculator = ViscosityCalculator<2>::Create();
-                        p_viscosity_calculator->SetPlasmaViscosity(viscosity);
-                        p_viscosity_calculator->SetVesselNetwork(p_network);
-                        p_viscosity_calculator->Calculate();
-                        
-                        // Set up the impedance solver
-                        auto p_impedance_calculator = VesselImpedanceCalculator<2>::Create();
-                        p_impedance_calculator->SetVesselNetwork(p_network);
-                        p_impedance_calculator->Calculate();
-
-                        // Set up the flow solver 
-                        FlowSolver<2> flow_solver;
-                        flow_solver.SetVesselNetwork(p_network);
-                        // flow_solver.SetUp();
-                        flow_solver.SetUseDirectSolver(true);
-                        // flow_solver.Solve();
-
                         // Prune all vessels up to specified dose 
-                        for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
+                        for(unsigned KilledVessels=0; KilledVessels < MaxKills; KilledVessels++)
+                        // for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
                         { 
                             // Display status message
                             std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
+
+                            // Set up the viscosity solver
+                            auto p_viscosity_calculator = ViscosityCalculator<2>::Create();
+                            p_viscosity_calculator->SetPlasmaViscosity(viscosity);
+                            p_viscosity_calculator->SetVesselNetwork(p_network);
+                            p_viscosity_calculator->Calculate();
+                            
+                            // Set up the impedance solver
+                            auto p_impedance_calculator = VesselImpedanceCalculator<2>::Create();
+                            p_impedance_calculator->SetVesselNetwork(p_network);
+                            p_impedance_calculator->Calculate();
+
+                            // Set up the flow solver 
+                            FlowSolver<2> flow_solver;
+                            flow_solver.SetVesselNetwork(p_network);
+                            // flow_solver.SetUp();
+                            flow_solver.SetUseDirectSolver(true);
+                            // flow_solver.Solve();
 
                             // Set filename
                             std::stringstream selection_stream;
@@ -17036,10 +17035,10 @@ public:
                             // QLength grid_spacing(Owen11Parameters::mpLatticeSpacing->GetValue("User"));
                             // QLength grid_spacing(1.0*1_um);  // the simulation time gets quite long if you reduce the resolution further
                             // QLength grid_spacing = 10_um;
-                            p_grid->SetSpacing(grid_spacing);
+                            p_grid->SetSpacing(cell_grid_spacing);
                             c_vector<unsigned, 3> dimensions;
-                            dimensions[0] = unsigned((domain_side_length_x)/(grid_spacing))+2; // num x
-                            dimensions[1] = unsigned((domain_side_length_y)/(grid_spacing))+2; // num_y
+                            dimensions[0] = unsigned((domain_side_length_x)/(cell_grid_spacing))+2; // num x
+                            dimensions[1] = unsigned((domain_side_length_y)/(cell_grid_spacing))+2; // num_y
                             dimensions[2] = 1;
                             p_grid->SetDimensions(dimensions);
                             // std::shared_ptr<Part<2> > p_domain = Part<2>::Create();
@@ -17152,8 +17151,8 @@ public:
                             // If simulation doesn't converge, move on to next layout and log problem 
                             if (broken_solver == 1)
                             {
-                                // broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
-                                broken_layouts_file.open("/home/narain/Desktop/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                                broken_layouts_file.open("/scratch/narain/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
+                                // broken_layouts_file.open("/home/narain/Desktop/testoutput/TestVoronoiNetwork/broken_layouts.txt", std::ios_base::app);
                                 broken_layouts_file << str_directory_name << " \n"; 
                                 broken_layouts_file.close();
 
@@ -17201,21 +17200,24 @@ public:
                             // }
                             // average_oxygen /= double(solution.size());
                             // std::cout << "Average oxygen: " << average_oxygen << std::endl;
-                            
-                            // // Write the PQs
-                            // QFlowRate threshold = 5.e-14*unit::metre_cubed_per_second;
-                            // QFlowRate threshold = 1.e-12*unit::metre_cubed_per_second;
-                            // QFlowRate threshold = 3.e-12*unit::metre_cubed_per_second;
-                            // QFlowRate threshold = 2.e-13*unit::metre_cubed_per_second; 
-                            // PerfusionQuotient = p_network->GetPerfusionQuotientBeta(threshold);
-                            // QuotientMatrixAggregate[i][KilledVessels] += PerfusionQuotient;  // store the PQ with the associated NHet and number of kills
-                            // outfile.open("/scratch/narain/testoutput/TestVoronoiNetwork/voronoi_lognormal_individual_perfusion_quotients.txt", std::ios_base::app);
-                            // outfile << network_name << " " << solver_name << " " << heterogeneity_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
-                            // outfile << network_name << " " << solver_name << " " << mean_string << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
-                            // outfile << network_name << " " << solver_name << " " << selection_string << " " << sd_string << " " << mean_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
-                            // outfile << network_name << " " << solver_name << " " << selection_string << " " << kill_string << " " << PerfusionQuotient << " \n"; 
-                            outfile.close();
 
+                            // Print the median oxygenation
+                            std::vector<double> solution = p_oxygen_solver->GetSolution();
+                            std::sort(solution.begin(), solution.end());
+                            double median_oxygen;
+                            size_t solution_size = solution.size();
+                            if (solution_size % 2 == 0) 
+                            {
+                                // Even number of elements
+                                median_oxygen = (solution[solution_size / 2 - 1] + solution[solution_size / 2]) / 2.0;
+                            } 
+                            else 
+                            {
+                                // Odd number of elements
+                                median_oxygen = solution[solution_size / 2];
+                            }
+                            std::cout << "Median oxygen (nM): " << median_oxygen << std::endl;
+                            
                             // // Remove the thinnest vessel
                             // vessels = p_network->GetVessels();
                             // QLength minimum_radius = 1000.0_um;
@@ -17241,47 +17243,154 @@ public:
                             // }
                             // p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
 
-                            // Remove the shortest vessel
-                            vessels = p_network->GetVessels();
-                            QLength minimum_length = 1000.0_um;
-                            unsigned int minimum_index = 0;
-                            for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
-                            {
-                                // Exclude inlets and outlets
-                                if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
-                                || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
-                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
-                                || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
-                                {   
-                                    // Get the current segment's length
-                                    QLength current_length = vessels[vessel_index]->GetLength();
-                                    
-                                    // If the current length is less than the minimum length, record the new minimum
-                                    if (current_length < minimum_length)
-                                    {
-                                        minimum_length = current_length;
-                                        minimum_index = vessel_index;
-                                    }                  
-                                }
-                            }
-                            p_network->RemoveVessel(vessels[minimum_index], true);  // remove the vessel
-
                             // Dump our parameter collection to an xml file and, importantly, clear it for the next test
                             ParameterCollection::Instance()->DumpToFile(p_file_handler->GetOutputDirectoryFullPath() + "parameter_collection.xml");
                             ParameterCollection::Instance()->Destroy();
                             BaseUnits::Instance()->Destroy();
                             SimulationTime::Instance()->Destroy();
+
+                            // If there is no oxygen in the network, don't prune any more vessels
+                            double total_oxygen = 0.0;
+                            for (unsigned i = 0; i < solution_size; ++i) 
+                            {
+                                total_oxygen += solution[i];
+                            }
+                            std::cout << "Total oxygen (nM): " << total_oxygen << std::endl;
+                            if (total_oxygen < tolerance2)
+                            {
+                                break;
+                            }
+
+                            // Regression-based pruning
+                            vessels = p_network->GetVessels();
+                            QFlowRate minimum_flow = 1.e-0*unit::metre_cubed_per_second;
+                            std::vector<unsigned int> minimum_flow_indices;
+                            // Step 1: Find the minimum flow rate and collect all vessels with this flow rate
+                            for (unsigned vessel_index = 0; vessel_index < vessels.size(); vessel_index++) 
+                            {
+                                // Exclude inlets and outlets
+                                if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode() ||
+                                    vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode() ||
+                                    vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode() ||
+                                    vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode())) 
+                                {
+                                    QFlowRate current_flow = fabs(vessels[vessel_index]->GetFlowProperties()->GetFlowRate());
+                                    if (current_flow < minimum_flow) 
+                                    {
+                                        minimum_flow = current_flow;
+                                        minimum_flow_indices.clear();
+                                        minimum_flow_indices.push_back(vessel_index);
+                                    } 
+                                    else if (current_flow == minimum_flow) 
+                                    {
+                                        minimum_flow_indices.push_back(vessel_index);
+                                    }
+                                }
+                            }
+                            // Step 2: Check for vessels with a degree one node
+                            std::vector<unsigned int> degree_one_indices;
+                            for (unsigned int index : minimum_flow_indices) 
+                            {
+                                if (vessels[index]->GetStartNode()->GetNumberOfSegments() == 1 || vessels[index]->GetEndNode()->GetNumberOfSegments() == 1) 
+                                {
+                                    degree_one_indices.push_back(index);
+                                }
+                            }
+                            // Step 3: If there are multiple vessels with degree one nodes, find the shortest one
+                            unsigned int vessel_to_remove = minimum_flow_indices[0];
+                            if (!degree_one_indices.empty()) 
+                            {
+                                vessel_to_remove = degree_one_indices[0];
+                                QLength minimum_length = vessels[degree_one_indices[0]]->GetLength();
+                                for (unsigned int index : degree_one_indices) 
+                                {
+                                    QLength current_length = vessels[index]->GetLength();
+                                    if (current_length < minimum_length) {
+                                        minimum_length = current_length;
+                                        vessel_to_remove = index;
+                                    }
+                                }
+                            } 
+                            else if (minimum_flow_indices.size() > 1) 
+                            {
+                                // If no degree one nodes, find the shortest vessel among those with minimum flow
+                                vessel_to_remove = minimum_flow_indices[0];
+                                QLength minimum_length = vessels[minimum_flow_indices[0]]->GetLength();
+                                for (unsigned int index : minimum_flow_indices) 
+                                {
+                                    QLength current_length = vessels[index]->GetLength();
+                                    if (current_length < minimum_length) 
+                                    {
+                                        minimum_length = current_length;
+                                        vessel_to_remove = index;
+                                    }
+                                }
+                            }
+                            // Remove the selected vessel
+                            p_network->RemoveVessel(vessels[vessel_to_remove], true);
+
+
+                            // // Length-based pruning (without floating ends)
+                            // vessels = p_network->GetVessels();
+                            // unsigned int vessel_to_remove = 0;
+                            // QLength minimum_length = 1000.0_um;
+                            // std::vector<unsigned int> floating_vessel_indices;
+                            // // Log all the vessels with no pressure at the nodes (totally disconnected vessels)
+                            // for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++) 
+                            // {
+                            //     // Exclude inlets and outlets
+                            //     if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                            //     || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                            //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                            //     || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                            //     {                                       
+                            //         if (vessels[vessel_index]->GetStartNode()->GetFlowProperties()->GetPressure() < tolerance2 && vessels[vessel_index]->GetEndNode()->GetFlowProperties()->GetPressure() < tolerance2) 
+                            //         {
+                            //             floating_vessel_indices.push_back(vessel_index);
+                            //         }
+                            //     }
+                            // } 
+                            // // If there are floating vessels, remove the shortest one
+                            // if (!floating_vessel_indices.empty()) 
+                            // {
+                            //     for (unsigned int index : floating_vessel_indices) 
+                            //     {
+                            //         QLength current_length = vessels[index]->GetLength();
+                            //         if (current_length < minimum_length) 
+                            //         {
+                            //             minimum_length = current_length;
+                            //             vessel_to_remove = index;
+                            //         }
+                            //     }
+                            // } 
+                            // // If there are no floating vessels, remove the overall shortest vessel in the network
+                            // else
+                            // {
+                            //     for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++) 
+                            //     {
+                            //         // Exclude inlets and outlets
+                            //         if (!(vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsInputNode()
+                            //         || vessels[vessel_index]->GetStartNode()->GetFlowProperties()->IsOutputNode()
+                            //         || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsInputNode()
+                            //         || vessels[vessel_index]->GetEndNode()->GetFlowProperties()->IsOutputNode()))
+                            //         {    
+                            //             QLength current_length = vessels[vessel_index]->GetLength();
+                            //             if (current_length < minimum_length) 
+                            //             {
+                            //                 minimum_length = current_length;
+                            //                 vessel_to_remove = vessel_index;
+                            //             }
+                            //         }              
+                            //     }
+                            // }
+                            // p_network->RemoveVessel(vessels[vessel_to_remove], true);  // remove the vessel
                         }
-                        // If simulation doesn't converge, move on to next layout
-                        if (broken_solver == 1)
-                        {
-                            break;
-                        }
-                    // }
-                    // // If simulation doesn't converge, move on to next layout
-                    // if (broken_solver == 1)
-                    // {
-                    //     break;
+
+                        // // If simulation doesn't converge, move on to next layout
+                        // if (broken_solver == 1)
+                        // {
+                        //     break;
+                        // }
                     // }
                 // } 
             }

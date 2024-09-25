@@ -681,17 +681,11 @@ public:
         unsigned NumberOfLayouts = 1000;  // number of different point layouts to run simulations with (add an extra selection for a demo)
         double dimless_domain_size_x = 1105.0; 
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as Mantegazza network
-        // double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
-        // double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
         // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
         QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
         // double initial_haematocrit = 0.45;        
-        // double initial_haematocrit = 0.1;  // conks out somewhere between 0.35 and 0.4
         double initial_haematocrit = 0.3;  // conks out somewhere between 0.35 and 0.4
         double tolerance = 0.001;  // for location of inlet/outlet nodes
-        // unsigned n_vessels = 382;  // number of non-inlet/outlet vessels from which to select ones to make thin
-        // double percToKill = 0.2;  // percentage of vessels to kill
-        // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
         // unsigned ToBeKilled = 0.5*((3*NumberOfSeedPoints)-6);  // number to kill
         // unsigned ToBeKilled = NumberOfSeedPoints;  // number to kill
         // unsigned ToBeKilled = 100;  // number to kill
@@ -734,7 +728,7 @@ public:
             // Run simulations with different layouts (could be used to compute some average later)
             // std::vector<unsigned> broken_selections = {2, 9, 11, 49, 69, 80, 93, 99};
             // std::vector<unsigned> broken_selections = {99};
-            unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
+            // unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
             for (unsigned layout=4;layout<=NumberOfLayouts; layout++)   
             { 
@@ -743,7 +737,8 @@ public:
                 
                 // Read the network layout from a file
                 VesselNetworkGenerator<2> network_generator;
-                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
+                // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+to_string(layout)+".txt");
                 std::vector<std::vector<double> > rEdgesMatrix;
                 string line;
                 while (std::getline(in, line)) 
@@ -849,54 +844,54 @@ public:
                 p_segment->SetRadius(7.5_um);  // same as Mantegazza
                 VesselNetworkPropertyManager<2>::SetSegmentProperties(p_network, p_segment);   
                 
+                // Set the haematocrit solver
+                std::shared_ptr<AbstractHaematocritSolver<2>> p_abstract_haematocrit_solver;
+                std::string solver_name;
+                if (h_solver==1)
+                {
+                    solver_name = "ConstantHaematocrit"; 
+                    std::cout << "Now using ConstantHaematocritSolver..." << std::endl;
+                    auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();  
+                    p_haematocrit_solver->SetVesselNetwork(p_network);
+                    p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                    p_abstract_haematocrit_solver = p_haematocrit_solver;     
+                }
+                else if (h_solver==2)
+                {
+                    solver_name = "PriesHaematocrit"; 
+                    std::cout << "Now using PriesHaematocritSolver..." << std::endl;
+                    auto p_haematocrit_solver = PriesHaematocritSolver<2>::Create();
+                    // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();     
+                    p_haematocrit_solver->SetVesselNetwork(p_network);
+                    p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                    p_abstract_haematocrit_solver = p_haematocrit_solver;                
+                }
+                else if (h_solver==3)
+                {
+                    solver_name = "MemoryHaematocrit"; 
+                    std::cout << "Now using PriesWithMemoryHaematocritSolver..." << std::endl;
+                    auto p_haematocrit_solver = PriesWithMemoryHaematocritSolver<2>::Create();
+                    // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
+                    p_haematocrit_solver->SetVesselNetwork(p_network);
+                    p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                    p_abstract_haematocrit_solver = p_haematocrit_solver;     
+                }
+                else if (h_solver==4)
+                {
+                    solver_name = "FungHaematocrit"; 
+                    std::cout << "Now using FungHaematocritSolver..." << std::endl;
+                    auto p_haematocrit_solver = BetteridgeHaematocritSolver<2>::Create();
+                    // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
+                    p_haematocrit_solver->SetVesselNetwork(p_network);
+                    p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
+                    p_abstract_haematocrit_solver = p_haematocrit_solver;     
+                }
+
                 // Prune all vessels up to specified dose 
                 for(unsigned KilledVessels=0; KilledVessels < MaxKills; KilledVessels++)
                 { 
                     // Display status message
                     std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
-
-                    // Set the haematocrit solver
-                    std::shared_ptr<AbstractHaematocritSolver<2>> p_abstract_haematocrit_solver;
-                    std::string solver_name;
-                    if (h_solver==1)
-                    {
-                        solver_name = "ConstantHaematocrit"; 
-                        std::cout << "Now using ConstantHaematocritSolver..." << std::endl;
-                        auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();  
-                        p_haematocrit_solver->SetVesselNetwork(p_network);
-                        p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
-                        p_abstract_haematocrit_solver = p_haematocrit_solver;     
-                    }
-                    else if (h_solver==2)
-                    {
-                        solver_name = "PriesHaematocrit"; 
-                        std::cout << "Now using PriesHaematocritSolver..." << std::endl;
-                        auto p_haematocrit_solver = PriesHaematocritSolver<2>::Create();
-                        // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();     
-                        p_haematocrit_solver->SetVesselNetwork(p_network);
-                        p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
-                        p_abstract_haematocrit_solver = p_haematocrit_solver;                
-                    }
-                    else if (h_solver==3)
-                    {
-                        solver_name = "MemoryHaematocrit"; 
-                        std::cout << "Now using PriesWithMemoryHaematocritSolver..." << std::endl;
-                        auto p_haematocrit_solver = PriesWithMemoryHaematocritSolver<2>::Create();
-                        // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
-                        p_haematocrit_solver->SetVesselNetwork(p_network);
-                        p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
-                        p_abstract_haematocrit_solver = p_haematocrit_solver;     
-                    }
-                    else if (h_solver==4)
-                    {
-                        solver_name = "FungHaematocrit"; 
-                        std::cout << "Now using FungHaematocritSolver..." << std::endl;
-                        auto p_haematocrit_solver = BetteridgeHaematocritSolver<2>::Create();
-                        // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();    
-                        p_haematocrit_solver->SetVesselNetwork(p_network);
-                        p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
-                        p_abstract_haematocrit_solver = p_haematocrit_solver;     
-                    }
 
                     // Set up the viscosity solver
                     auto p_viscosity_calculator = ViscosityCalculator<2>::Create();
@@ -915,12 +910,6 @@ public:
                     // flow_solver.SetUp();
                     flow_solver.SetUseDirectSolver(true);
                     // flow_solver.Solve();
-
-                    // // Prune all vessels up to specified dose 
-                    // for(unsigned KilledVessels=0; KilledVessels <= ToBeKilled; KilledVessels++)
-                    // { 
-                        // // Display status message
-                        // std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
 
                     // Set filename
                     std::stringstream selection_stream;
@@ -1397,13 +1386,13 @@ public:
                     }
                     // Remove the selected vessel
                     p_network->RemoveVessel(vessels[vessel_to_remove], true);
-
-                    // If simulation doesn't converge, move on to next layout
-                    if (broken_solver == 1)
-                    {
-                        break;
-                    }
                 }
+                
+                // // If simulation doesn't converge, move on to next layout
+                // if (broken_solver == 1)
+                // {
+                //     break;
+                // }
             }
         }
         
