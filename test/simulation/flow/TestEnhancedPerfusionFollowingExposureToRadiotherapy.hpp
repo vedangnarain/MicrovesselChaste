@@ -173,7 +173,7 @@ public:
     unsigned max_alpha = 3;  // set the max. heterog. parameter (alpha = 1+(max_alpha*0.1), i.e., 5 is 1.5) 
 
     // Choose the number of bifurcating generations (inlet and outlet vessels don't count)
-    unsigned order = 7;
+    unsigned order = 6;
 
     // Make a multi-generation forking network with different h-splitting rules and individual pruning
     void TestDichotomousNetworkWithIndividualPruningAndFlow2DAndVaryingMeansPaper1()
@@ -191,8 +191,8 @@ public:
             outfile.close();
 
             // Define the key pruning parameters
-            // unsigned n_vessels = 250;  // number of non-inlet/outlet vessels from which to select ones to kill
-            unsigned n_vessels = 508;  // number of non-inlet/outlet vessels from which to select ones to kill
+            unsigned n_vessels = 250;  // number of non-inlet/outlet vessels from which to select ones to kill
+            // unsigned n_vessels = 508;  // number of non-inlet/outlet vessels from which to select ones to kill
             // unsigned n_vessels = 124;  // number of non-inlet/outlet vessels from which to select ones to kill
             // double percToKill = 0.2;  // percentage of vessels to kill
             // unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
@@ -218,7 +218,7 @@ public:
                     BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
 
                     // Set input radius
-                    QLength input_radius(8.5 *GenericParameters::mpCapillaryRadius->GetValue());  // = *5_um (*10_um for diameter)
+                    QLength input_radius(7.5 *GenericParameters::mpCapillaryRadius->GetValue());  // = *5_um (*10_um for diameter)
                     // VesselNetworkPropertyManager<2>::SetSegmentRadii(p_network, vessel_radius);
 
                     // Set the viscosity
@@ -498,7 +498,7 @@ public:
     unsigned max_n_alpha = 2;  // alpha controls the mean
 
     // Make a full 2D hexagonal network with flow, H-splitting, non-inlet/outlet radii set according to a log normal distribution based on biological networks, and kills-based pruning on the non-inlet/outlet vessels (correcting for the unexplained -50 um offset in the other simulation).
-    void TestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2DPaper1()
+    void xTestConstantOffsetBiologicalHexagonalNeighbourhoodWithIndividualPruning2DPaper1()
     {
         // Initialise error log
         std::ostringstream error_log;

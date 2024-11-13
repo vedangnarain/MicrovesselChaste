@@ -750,7 +750,7 @@ const std::vector<double>& DensityMap<DIM>::rGetCellDensity(bool update)
                 // std::cout << "oxy_grid ID=" << idx << std::endl;
                 // std::cout << "oxy_grid_volumes[idx]=" << grid_volumes[idx] << std::endl;
                 // mDimensionlessCellDensity[idx] += 1.0/grid_volumes[idx];
-                mDimensionlessCellDensity[idx] += 1.0;
+                mDimensionlessCellDensity[idx] += 1.0;  // For some reason, the original assignment factored in the grid element size without factoring in the cell size. It currently works if the cell size is the same as the grid element size (and possible smaller but not bigger)
                 // std::cout << "mDimensionlessCellDensity[idx]=" << mDimensionlessCellDensity[idx] << std::endl;
             }
         }

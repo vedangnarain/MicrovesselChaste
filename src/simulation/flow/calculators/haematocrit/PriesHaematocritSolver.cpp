@@ -281,10 +281,13 @@ void PriesHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Vessel<DIM> 
 
     QDimensionless parent_haematocrit = parent->GetFlowProperties()->GetHaematocrit();
 
-    // Assign A, B and X0 from Pries1989 model
-    
-    double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
-    double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
+    // Assign B and X0 from Pries1989 model
+    // double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
+    // double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
+
+    // Assign B and X0 from Merlo2022 model (scaled for human blood)
+    double X0 = 1.12*(1-parent_haematocrit)/(2.0*micron_parent_radius);
+    double B = 1.0 + 8.13*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
 
     QFlowRate modified_flow_ratio_num = Qabs(my_flow_rate)-X0*Qabs(parent_flow_rate);
     QFlowRate modified_flow_ratio_den = Qabs(competitor_flow_rate)-X0*Qabs(parent_flow_rate);
@@ -308,7 +311,11 @@ void PriesHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Vessel<DIM> 
     
     QDimensionless modified_flow_ratio_mc = modified_flow_ratio_num / modified_flow_ratio_den;
 
-    double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
+    // Assign A from Pries1989 model
+    // double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
+
+    // Assign A from Merlo2022 model (scaled for human blood)
+    double A = -15.47*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
 
     double term1 = pow(modified_flow_ratio_mc,B);
     assert(!std::isnan(term1));

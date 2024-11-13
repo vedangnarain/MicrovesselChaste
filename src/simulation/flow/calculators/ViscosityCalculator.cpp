@@ -80,9 +80,11 @@ void ViscosityCalculator<DIM>::Calculate()
         double power_term_1 = 1.0 / (1.0 + pow(10.0, -11.0) * pow(2.0 * micron_radius, 12));
 
         double c = (0.8 + exp(-0.15 * micron_radius)) * (power_term_1 - 1) + power_term_1;
+        // double mu_45 = 220.0 * exp(-1.30 * micron_radius) + 3.2 - 2.44 * exp(-0.06 * pow(2 * micron_radius, 0.645));  // Merlo et al. (2022)
         double mu_45 = 6.0 * exp(-0.17 * micron_radius) + 3.2 - 2.44 * exp(-0.06 * pow(2 * micron_radius, 0.645));
 
         double power_term_2 = pow((2.0 * micron_radius / (2.0 * micron_radius - 1.1)), 2.0);
+        // double power_term_2 = 1.0;  // Merlo et al. (2022)
         double mu_rel = (1.0
                 + (mu_45 - 1.0) * (((pow((1.0 - haematocrit), c)) - 1) / ((pow((1.0 - 0.45), c)) - 1.0)) * power_term_2) * power_term_2;
 

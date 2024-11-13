@@ -378,6 +378,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             assert(me->GetPreference() == UNSIGNED_UNSET);
             me->SetPreference(favoured);
             me->SetDistToPrevBif(parent->GetLength());
+            std::cout<< "parent->GetLength() " << parent->GetLength() << std::endl;
         }
         //me->SetDistToPrevBif(parent->GetLength());
         
@@ -386,6 +387,12 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
         double length_difference_relative = (me->GetDistToPrevBif() - parent->GetLength())/parent->GetLength();
         if (fabs(length_difference_relative) > 1e-14)
         {
+            // Print out the problem
+            std::cout<< "length_difference_relative " << length_difference_relative << std::endl;
+            std::cout<< "me->GetDistToPrevBif() " << me->GetDistToPrevBif() << std::endl;
+            std::cout<< "parent->GetLength() " << parent->GetLength() << std::endl;
+
+            // Warn me (currently also warns me pointlessly for vessels connected to inlet, for which distance to previous bifurcation has no relevance)
             WARNING("Set distance to previous bifurcation does not match actual distance");
         }
         if (direction_set[updateIndices[idx][1]] == false)
@@ -465,9 +472,11 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
         cfl_term = -A_shift*exp(-micron_distTPB/(omega*2*micron_parent_radius));    
     }
 
-    double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0))+cfl_term;
+    double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
+    double A_f = (-6.96*std::log(diameter_ratio)/(2.0*micron_parent_radius))+cfl_term;
 
     double term2 = exp(A);
+    double term2_memory = exp(A_f);
 
     if(parent->GetStartNode()->GetFlowProperties()->IsInputNode() or
                 parent->GetEndNode()->GetFlowProperties()->IsInputNode())
@@ -505,8 +514,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
         {
             modified_flow_ratio_mc = (Qabs(my_flow_rate)-X0_favor*Qabs(parent_flow_rate))/(Qabs(competitor_flow_rate)-X0_unfavor*Qabs(parent_flow_rate));
             double term1 = pow(modified_flow_ratio_mc,B);
-            double numer = term2*term1*flow_ratio_pm;
-            double denom = 1.0+term2*term1;
+            double numer = term2_memory*term1*flow_ratio_pm;
+            double denom = 1.0+term2_memory*term1;
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), -numer/denom);
         }
     }
@@ -532,8 +541,8 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
         {
             modified_flow_ratio_mc = (Qabs(my_flow_rate)-X0_unfavor*Qabs(parent_flow_rate))/(Qabs(competitor_flow_rate)-X0_favor*Qabs(parent_flow_rate));
             double term1 = pow(modified_flow_ratio_mc,B);
-            double numer = term2*term1*flow_ratio_pm;
-            double denom = 1.0+term2*term1;
+            double numer = term2_memory*term1*flow_ratio_pm;
+            double denom = 1.0+term2_memory*term1;
             rLinearSystem.SetMatrixElement(me->GetId(), parent->GetId(), -numer/denom);
         }
     }

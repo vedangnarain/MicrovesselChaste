@@ -33,6 +33,21 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vedang's Notes (vedang.narain@msdtc.ox.ac.uk)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+TO DO LIST
+
+- Out of the forking network generators, the only onces that have been verified with the Memory rule are GenerateForkingNetworkNoCorners and GenerateDichotomousNetworkForRadiotherapy.
+- There are lots of unecessary tests here that could be cleaned up. 
+
+13/11/24
+
+*/
+
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "RandomNumberGenerator.hpp"

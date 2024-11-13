@@ -302,7 +302,7 @@ public:
       BaseUnits::Instance()->Destroy();
   }
 
-  // Make a single line across a PDE grid that acts as a Dirichlet BC in 2D 
+  // Make a single line across a PDE grid with flow and h-splitting in 2D 
   void TestSingleFlowSource2D()
   {    
       // Add the vessels to a vessel network
@@ -316,9 +316,11 @@ public:
       p_network->GetNode(0)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
       p_network->GetNode(p_network->GetNumberOfNodes()-1)->GetFlowProperties()->SetIsOutputNode(true);
       p_network->GetNode(p_network->GetNumberOfNodes()-1)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
+      
       // Set segment radii values
       QLength vessel_radius(7.5_um);
       VesselNetworkPropertyManager<2>::SetSegmentRadii(p_network, vessel_radius);
+      
       // Set segment viscosity values
       QDynamicViscosity viscosity = 1.96*1.e-3*unit::poiseuille;
       auto p_viscosity_calculator = ViscosityCalculator<2>::Create();
@@ -374,13 +376,10 @@ public:
           p_abstract_haematocrit_solver = p_haematocrit_solver;      
       }
 
-
-
-
       // No pruning
       std::ostringstream strs;
       strs << std::fixed << std::setprecision( 1 );
-      strs << "TestDebuggingNetworks/SingleLineSource/";
+      strs << "TestDebuggingNetworks/SingleFlowSource/";
       std::string str_directory_name = strs.str();
       auto p_output_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);         
       // p_network->RemoveVessel(p_vessel_7,true);
@@ -517,7 +516,6 @@ public:
       BaseUnits::Instance()->Destroy();
       SimulationTime::Instance()->Destroy();
   }
-
 
  };
 
