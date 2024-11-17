@@ -388,9 +388,9 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
         if (fabs(length_difference_relative) > 1e-14)
         {
             // Print out the problem
-            std::cout<< "length_difference_relative " << length_difference_relative << std::endl;
-            std::cout<< "me->GetDistToPrevBif() " << me->GetDistToPrevBif() << std::endl;
-            std::cout<< "parent->GetLength() " << parent->GetLength() << std::endl;
+            // std::cout<< "length_difference_relative " << length_difference_relative << std::endl;
+            // std::cout<< "me->GetDistToPrevBif() " << me->GetDistToPrevBif() << std::endl;
+            // std::cout<< "parent->GetLength() " << parent->GetLength() << std::endl;
 
             // Warn me (currently also warns me pointlessly for vessels connected to inlet, for which distance to previous bifurcation has no relevance)
             WARNING("Set distance to previous bifurcation does not match actual distance");

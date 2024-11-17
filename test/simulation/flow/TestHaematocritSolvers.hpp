@@ -15608,7 +15608,7 @@ public:
     }
 
     // Make a digital twin of the Merlo network 
-    void xTestMerloMicrofluidicsNetworkPaper2()
+    void TestMerloMicrofluidicsNetworkPaper2()
     {
         // Initialise error log
         std::ostringstream error_log;
