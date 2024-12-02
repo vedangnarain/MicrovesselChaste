@@ -435,8 +435,10 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     // double omega = 2.0;
     // double omega = 4.0;  // original value
     // double omega = 8.0;
+    // double omega = 12.0;
     // double omega = 16.0;
-    double omega = 28.0;  // optimal value based on optimisation algorithm for microfluidics experiments (Hyakutake et al., 2021)
+    double omega = 24.0;  // optimal value based on optimisation algorithm for microfluidics experiments (Hyakutake et al., 2021)
+    // double omega = 28.0;
     // double omega = 32.0;
     // double omega = 64.0;
     // double omega = 128.0;
@@ -449,12 +451,17 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
     double micron_distTPB = (dist_to_prev_bif/unit::metres)*1.e6;
     double A_shift = 0.5;
 
-    // X0 and its values for favourable and unfavourable branches
+    // Assign B and X0 from Pries1989 model
+    // double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
+    // double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
 
-    double X0 = 0.964*(1-parent_haematocrit)/(2.0*micron_parent_radius);
+    // Assign B and X0 from Merlo2022 model (scaled for human blood)
+    double B = 1.0 + 8.13*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
+    double X0 = 1.12*(1-parent_haematocrit)/(2.0*micron_parent_radius);
+
+    // X0 and its values for favourable and unfavourable branches
     double X0_favor = X0*(1.0-exp(-micron_distTPB/(omega*2*micron_parent_radius)));
     double X0_unfavor = X0*(1.0+exp(-micron_distTPB/(omega*2*micron_parent_radius)));
-    double B = 1.0 + 6.98*(1.0-parent_haematocrit)/(2.0*micron_parent_radius);
 
     QDimensionless modified_flow_ratio_mc;
 
@@ -472,8 +479,13 @@ void PriesWithMemoryHaematocritSolver<DIM>::UpdateBifurcation(std::shared_ptr<Ve
         cfl_term = -A_shift*exp(-micron_distTPB/(omega*2*micron_parent_radius));    
     }
 
-    double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
-    double A_f = (-6.96*std::log(diameter_ratio)/(2.0*micron_parent_radius))+cfl_term;
+    // Assign A from Pries1989 model
+    // double A = -13.29*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
+    // double A_f = (-6.96*std::log(diameter_ratio)/(2.0*micron_parent_radius))+cfl_term;
+
+    // Assign A from Merlo2022 model (scaled for human blood)
+    double A = -15.47*((1.0-parent_haematocrit)*(diameter_ratio*diameter_ratio-1.0))/(2.0*micron_parent_radius*(diameter_ratio*diameter_ratio+1.0));
+    double A_f = (-8.09*std::log(diameter_ratio)/(2.0*micron_parent_radius))+cfl_term;
 
     double term2 = exp(A);
     double term2_memory = exp(A_f);

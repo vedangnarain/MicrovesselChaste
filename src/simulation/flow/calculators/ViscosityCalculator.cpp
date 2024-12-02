@@ -74,8 +74,7 @@ void ViscosityCalculator<DIM>::Calculate()
         QLength radius = segments[segment_index]->GetRadius();
         QDimensionless haematocrit = segments[segment_index]->GetFlowProperties()->GetHaematocrit();
 
-        // This equation assumes the radius is in micron so manually converted. No dimensional checking is done here, it may not
-        // even be possible for this equation.
+        // This equation assumes the radius is in micron so manually converted. No dimensional checking is done here, it may not even be possible for this equation.
         double micron_radius = (radius/unit::metres)*1.e6;
         double power_term_1 = 1.0 / (1.0 + pow(10.0, -11.0) * pow(2.0 * micron_radius, 12));
 
