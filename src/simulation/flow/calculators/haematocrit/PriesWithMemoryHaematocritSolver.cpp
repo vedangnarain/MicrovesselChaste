@@ -393,7 +393,7 @@ void PriesWithMemoryHaematocritSolver<DIM>::CalculateVesselPreferences(std::vect
             // std::cout<< "parent->GetLength() " << parent->GetLength() << std::endl;
 
             // Warn me (currently also warns me pointlessly for vessels connected to inlet, for which distance to previous bifurcation has no relevance)
-            WARNING("Set distance to previous bifurcation does not match actual distance");
+            // WARNING("Set distance to previous bifurcation does not match actual distance");
         }
         if (direction_set[updateIndices[idx][1]] == false)
         {
