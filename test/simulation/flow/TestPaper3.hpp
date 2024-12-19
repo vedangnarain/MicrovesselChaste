@@ -667,7 +667,7 @@ public:
     }
 
     // Simulate a 2D Voronoi network on a PDE grid with flow and H-splitting and O2 and cells
-    void TestVoronoiNetwork2DPaper3() 
+    void xTestVoronoiNetwork2DPaper3() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -1402,7 +1402,7 @@ public:
     }
 
     // Simulate an experimentally-acquired healthy network on a PDE grid with flow and O2 and cells
-    void xTestHealthyNetwork2D() 
+    void TestHealthyNetwork2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -1993,7 +1993,7 @@ public:
     }
 
     // Simulate an experimentally-acquired metastatic network on a PDE grid with flow and O2 and experimentally-acquired cells
-    void xTestMetastaticImage2D() 
+    void TestMetastaticImage2D() 
     {
         // Initialise error log
         std::ostringstream error_log;

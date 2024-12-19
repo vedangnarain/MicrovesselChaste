@@ -16306,7 +16306,7 @@ public:
         unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        for (unsigned h_solver=2; h_solver<=2; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -16334,7 +16334,7 @@ public:
 
             // Loop over different diameter assignments
             // unsigned seed_number = 42;  // which seed to use for the random number generator for the diameter lists            
-            for(unsigned list_number=1; list_number<=selections; list_number++)
+            for(unsigned list_number=22; list_number<=selections; list_number++)
             {             
                 // Loop over increasing level of heterogeneity 
                 for(unsigned n_sigma=0; n_sigma<=max_n_sigma; n_sigma++)
@@ -16760,7 +16760,7 @@ public:
         unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        for (unsigned h_solver=2; h_solver<=2; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -16788,7 +16788,7 @@ public:
 
             // Loop over different diameter assignments
             // unsigned seed_number = 42;  // which seed to use for the random number generator for the diameter lists            
-            for(unsigned list_number=83; list_number<=selections; list_number++)
+            for(unsigned list_number=82; list_number<=selections; list_number++)
             {             
                 // Loop over increasing level of heterogeneity 
                 for(unsigned n_sigma=0; n_sigma<=max_n_sigma; n_sigma++)
@@ -18606,7 +18606,7 @@ public:
         BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
 
         // Match this based on cell size
-        QLength cell_grid_spacing = 20.0_um;
+        QLength cell_grid_spacing = 1.0_um;
 
         // Define the key parameters
         double dimless_domain_size_x = 1105.0; 
@@ -18642,7 +18642,7 @@ public:
             // std::vector<unsigned> broken_selections = {99};
             // unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
+            for (unsigned layout=754;layout <= 754; layout++)   
             // for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
             { 
 
@@ -18651,7 +18651,7 @@ public:
                 
                 // Read the network layout from a file
                 VesselNetworkGenerator<2> network_generator;
-                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+std::to_string(NumberOfSeedPoints)+"SeedPoints/current/EdgesMatrixSampleNumber"+std::to_string(layout)+".txt");
+                std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+std::to_string(NumberOfSeedPoints)+"SeedPoints/verified/EdgesMatrixSampleNumber"+std::to_string(layout)+".txt");
                 // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+std::to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + std::to_string(seed_number) + "/verified/EdgesMatrixSampleNumber"+std::to_string(layout)+".txt");
                 // std::ifstream in("/home/narain/Chaste/projects/MicrovesselChaste/test/simulation/flow/edges/voronoi/"+std::to_string(NumberOfSeedPoints)+"SeedPoints/random_seed_" + std::to_string(seed_number) + "/EdgesMatrixSampleNumber"+std::to_string(layout)+".txt");
                 // std::ifstream in("/home/narain/Desktop/Scripts/generate_new_voronoi_network/output/"+std::to_string(NumberOfSeedPoints)+"SeedPoints/EdgesMatrixSampleNumber"+std::to_string(layout)+".txt");
@@ -18713,41 +18713,6 @@ public:
                         // Set inlet and outlet nodes (if node (start/end) is at the edge of the domain space, make it input or output depending on which side), and assign each vessel a radius from the list  
                         auto p_segment = p_network->GetVesselSegments()[0];
                         vessels = p_network->GetVessels();
-                        // for (vessel_iterator = vessels.begin(); vessel_iterator != vessels.end(); vessel_iterator++)
-                        // {
-                        //     if((*vessel_iterator)->GetStartNode()->GetNumberOfSegments() == 1)
-                        //     {
-                        //         if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] <  tolerance)
-                        //         {
-                        //             (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsInputNode(true);
-                        //             (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(3333.0*unit::pascals);
-                        //         }
-                        //         //if((*vessel_iterator)->GetStartNode()->rGetLocation().Convert(1_um)[0] > dimless_domain_size_x - tolerance)
-                        //         else  // any dead-end not at x=0 is outlet (the geometry generation process removes vessels at top and bottom so only rightmost remain; nodes are designated at start so pruning makes no difference)
-                        //         {
-                        //             (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetIsOutputNode(true);
-                        //             (*vessel_iterator)->GetStartNode()->GetFlowProperties()->SetPressure(2000.0*unit::pascals);
-                        //         }
-                        //         // (*vessel_iterator)->SetRadius(inlet_vessel_radius);
-                        //     }
-                        //     if((*vessel_iterator)->GetEndNode()->GetNumberOfSegmindexents() == 1)
-                        //     {
-                        //         if((*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[0] <  tolerance)
-                        //         {
-                        //             (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsInputNode(true);
-                        //             (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(3333.0*unit::pascals);
-                        //         }
-                        //         //if((*vessel_iterator)->GetEndNode()->rGetLocation().Convert(1_um)[0] > dimless_domain_size_x - tolerance)
-                        //         else
-                        //         {
-                        //             (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetIsOutputNode(true);
-                        //             (*vessel_iterator)->GetEndNode()->GetFlowProperties()->SetPressure(2000.0*unit::pascals);
-                        //         }
-                        //         // (*vessel_iterator)->SetRadius(inlet_vessel_radius);
-                        //     }
-                        // }
-                        // vessels = p_network->GetVessels();
-            
 
                         // Assign the first vessel as the input and the last as the output and remove all other dead ends (i.e., make the network single inlet and outlet)
                         unsigned counter = 0;
@@ -18829,15 +18794,6 @@ public:
                         }
                         vessels = p_network->GetVessels();
 
-                        // Assign the radii
-                        // for(unsigned vessel_index=0; vessel_index<vessels.size(); vessel_index++)  // for all the segments in the network
-                        // {
-                        //     // Get segment radius from array
-                        //     QLength new_vessel_radius(double(radii_array[vessel_index][0])*unit::microns);
-                        //     vessels[vessel_index]->SetRadius(new_vessel_radius);
-                        // }
-                        // vessels = p_network->GetVessels();
-
                         // Remove diameter heterogeneity
                         p_segment = p_network->GetVesselSegments()[0];
                         p_segment->SetRadius(7.5_um);  // same as Mantegazza
@@ -18885,16 +18841,6 @@ public:
                             p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
                             p_abstract_haematocrit_solver = p_haematocrit_solver;     
                         }
-                        // else if (h_solver==5)
-                        // {
-                        //     solver_name = "YangHaematocrit"; 
-                        //     std::cout << "Now using YangHaematocritSolver..." << std::endl;
-                        //     auto p_haematocrit_solver = YangHaematocritSolver<2>::Create();
-                        //     // auto p_haematocrit_solver = ConstantHaematocritSolver<2>::Create();   
-                        //     p_haematocrit_solver->SetVesselNetwork(p_network);
-                        //     p_haematocrit_solver->SetHaematocrit(initial_haematocrit);
-                        //     p_abstract_haematocrit_solver = p_haematocrit_solver;     
-                        // }
 
                         // Prune all vessels up to specified dose 
                         for(unsigned KilledVessels=0; KilledVessels < MaxKills; KilledVessels++)
@@ -19368,7 +19314,7 @@ public:
         unsigned MaxKills = (3*NumberOfSeedPoints)-6;  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=3; h_solver<=3; h_solver++)
+        for (unsigned h_solver=2; h_solver<=2; h_solver++)
         {     
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -19384,7 +19330,7 @@ public:
             // std::vector<unsigned> broken_selections = {99};
             // unsigned seed_number = 42;  // which seed to use for the random number generator for the edge matrix generation 
             // for (unsigned list_number : broken_selections)
-            for (unsigned layout=942;layout <= NumberOfLayouts; layout++)   
+            for (unsigned layout=1;layout <= 941; layout++)   
             // for (unsigned layout=1;layout <= NumberOfLayouts; layout++)   
             { 
 
