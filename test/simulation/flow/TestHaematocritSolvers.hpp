@@ -16298,7 +16298,8 @@ public:
         double dimless_domain_size_x = 1105.0;  // x-coordinate of output node
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as x but with one vessel length above and below
         QLength inlet_vessel_radius = 4.86_um;  // equals an effective diameter of 9.73 um
-        QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        QDynamicViscosity viscosity = Owen11Parameters::mpPlasmaViscosity->GetValue();
         double initial_haematocrit = 0.3;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         unsigned n_vessels = 174;  // number of non-inlet/outlet vessels from which to select ones to make thin
@@ -16752,7 +16753,8 @@ public:
         double dimless_domain_size_x = 1105.0;  // x-coordinate of output node
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as x but with one vessel length above and below
         QLength inlet_vessel_radius = 4.86_um;  // equals an effective diameter of 9.73 um
-        QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        // QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
+        QDynamicViscosity viscosity = Owen11Parameters::mpPlasmaViscosity->GetValue();
         double initial_haematocrit = 0.3;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         unsigned n_vessels = 174;  // number of non-inlet/outlet vessels from which to select ones to make thin
@@ -16760,7 +16762,7 @@ public:
         unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=2; h_solver<=2; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -18586,7 +18588,7 @@ public:
     }
    
    // Make a 2D Voronoi network on a PDE grid with flow and H-splitting and O2
-    void xTestVoronoiNetwork2DWithFlowAndO2Paper2() 
+    void TestVoronoiNetwork2DWithFlowAndO2Paper2() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -18606,7 +18608,7 @@ public:
         BaseUnits::Instance()->SetReferenceLengthScale(reference_length);
 
         // Match this based on cell size
-        QLength cell_grid_spacing = 1.0_um;
+        QLength cell_grid_spacing = 20.0_um;
 
         // Define the key parameters
         double dimless_domain_size_x = 1105.0; 

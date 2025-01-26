@@ -1992,8 +1992,8 @@ public:
         std::cout << error_message << std::endl; 
     }
 
-    // Simulate an experimentally-acquired metastatic network on a PDE grid with flow and O2 and experimentally-acquired cells
-    void xTestMetastaticImage2D() 
+    // Simulate an experimentally-acquired metastatic network on a PDE grid with flow and O2 and experimentally-acquired cells and size-based pruning
+    void xTestMetastaticImageSizePruning2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -2081,9 +2081,9 @@ public:
             // p_network->GetNode(1928)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
 
             p_network->GetNode(1639)->GetFlowProperties()->SetIsInputNode(true);
-            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpInletPressure->GetValue("User"));
+            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
             p_network->GetNode(1899)->GetFlowProperties()->SetIsOutputNode(true);
-            p_network->GetNode(1899)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
+            p_network->GetNode(1899)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
 
             // Remove diameter heterogeneity
             auto p_segment = p_network->GetVesselSegments()[0];
@@ -2640,7 +2640,7 @@ public:
     }
 
     // Simulate an experimentally-acquired metastatic network on a PDE grid with flow and O2 and experimentally-acquired cells and flow-based pruning
-    void TestMetastaticImageFlowPruning2D() 
+    void xTestMetastaticImageFlowPruning2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
@@ -2728,9 +2728,9 @@ public:
             // p_network->GetNode(1928)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
 
             p_network->GetNode(1639)->GetFlowProperties()->SetIsInputNode(true);
-            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpInletPressure->GetValue("User"));
+            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
             p_network->GetNode(1899)->GetFlowProperties()->SetIsOutputNode(true);
-            p_network->GetNode(1899)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
+            p_network->GetNode(1899)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
 
             // Remove diameter heterogeneity
             auto p_segment = p_network->GetVesselSegments()[0];
@@ -3362,9 +3362,9 @@ public:
             // Manually set the inlets and outlets (no_trifurcations)
             vessels = p_network->GetVessels();
             p_network->GetNode(0)->GetFlowProperties()->SetIsInputNode(true);
-            p_network->GetNode(0)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpInletPressure->GetValue("User"));
+            p_network->GetNode(0)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
             p_network->GetNode(1)->GetFlowProperties()->SetIsOutputNode(true);
-            p_network->GetNode(1)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
+            p_network->GetNode(1)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
 
             // Remove diameter heterogeneity
             auto p_segment = p_network->GetVesselSegments()[0];
