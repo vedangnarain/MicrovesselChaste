@@ -41,8 +41,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This script contains tests used for the simulations in my DPhil thesis.
 
-Outputs can usually be found in /scratch/<home_directory>/testoutput. The pointwise data for the field can be obtained by opening spreadsheet view in Paraview.
-
 H = Haematocrit
 BC = boundary condition
 RT = Radiotherapy
@@ -134,9 +132,9 @@ Fig. = Figure
 #include "ViscosityCalculator.hpp"
 
 // Haematocrit
-// #include "BetteridgeHaematocritSolver.hpp"
+#include "BetteridgeHaematocritSolver.hpp"
 #include "ConstantHaematocritSolver.hpp"
-#include "YangHaematocritSolver.hpp"
+// #include "YangHaematocritSolver.hpp"
 #include "PriesHaematocritSolver.hpp"
 #include "PriesWithMemoryHaematocritSolver.hpp"
 
@@ -190,14 +188,29 @@ Fig. = Figure
 
 // Keep this last
 #include "PetscAndVtkSetupAndFinalize.hpp"
-// using namespace std;
-namespace fs = fs;
+using namespace std;
+// namespace fs = fs;
 
-// Make a test class
-class TestDPhilThesis : public AbstractCellBasedWithTimingsTestSuite
+// Tests with synthetic networks
+class TestSyntheticNetworks : public CxxTest::TestSuite
 {
 
 public:
+
+    // Define key parameters here, i.e., things that are constant across architectures
+    QLength grid_spacing = 20.0_um;
+	unsigned selections = 100;  // number of layouts from which to choose thin vessels (upto 100)
+    QLength large_vessel_radius = 10_um;
+    QLength small_vessel_radius = 5_um;    
+    QLength inlet_vessel_radius = 37.5_um;  // the maximum radius of the distribution
+    double dimless_domain_size_x = 2050.0;  // x-coordinate of output node
+    double dimless_domain_size_y = 1818.65 + 86.6025;  // y-coordinate of topmost vessel + y-coordinate of lowest vessel (offset from domain edge)
+    unsigned dimless_vessel_length = 100.0;
+    unsigned max_n_sigma = 2;
+    unsigned max_n_mu = 2;
+    unsigned NumberOfSeedPoints = 60;  // change this to select which Voronoi architecture to use: 25, 100, 400
+    unsigned NumberOfLayouts = 1250;  // number of different point layouts to run simulations with (add an extra selection for a demo)
+    double dimless_domain_size_xy = 2000.0; 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Chapter 3
@@ -3587,10 +3600,17 @@ public:
         std::cout << error_message << std::endl; 
     }
 
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Chapters 6
+// Chapter 6
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Tests with real networks
+class TestBiologicalNetworks : public AbstractCellBasedWithTimingsTestSuite
+{
+
+public:
 
     // Simulate the experimentally-acquired control
     void xTestControlNetwork() 
