@@ -1806,16 +1806,17 @@ public:
         // Define the key parameters
         double dimless_domain_size_x = 1105.0;  // x-coordinate of output node
         double dimless_domain_size_y = 1105.0 + (2.0*85.0);  // same as x but with one vessel length above and below
-        QLength inlet_vessel_radius = 4.86_um;  // equals an effective diameter of 9.73 um
+        QLength inlet_vessel_radius = 4.86_um;  // equals an effective diameter of 9.72 um
         QDynamicViscosity viscosity = 1.e-3*unit::poiseuille;
-        double initial_haematocrit = 0.3;
+        // double initial_haematocrit = 0.3;
+        double initial_haematocrit = 0.15;
         double tolerance = 0.001;  // for location of inlet/outlet nodes
         unsigned n_vessels = 174;  // number of non-inlet/outlet vessels from which to select ones to make thin
         double percToKill = 0.0;  // percentage of vessels to kill
         unsigned ToBeKilled = (unsigned)(percToKill*n_vessels);  // number to kill
 
         // Run the simulation with different solvers of interest
-        for (unsigned h_solver=1; h_solver<=1; h_solver++)
+        for (unsigned h_solver=3; h_solver<=3; h_solver++)
         {
             // Initialise the simulation
             std::shared_ptr<VesselNetwork<2> > p_network;
@@ -1958,20 +1959,8 @@ public:
                                 // Display status message
                                 std::cout << "Now killed " << KilledVessels << " vessels." << std::endl;  
 
-                                // Set filename
-                                // std::stringstream selection_stream;
-                                // std::stringstream sd_stream;
-                                // std::stringstream mean_stream;
-                                // std::stringstream kill_stream;
-                                // selection_stream << std::fixed << std::setprecision(0) << std::to_string(list_number);                    
-                                // sd_stream << std::fixed << std::setprecision(0) << sigma;                     
-                                // mean_stream << std::fixed << std::setprecision(0) << mu;                          
-                                // kill_stream << std::fixed << std::setprecision(0) << KilledVessels;           
-                                // std::string selection_string = selection_stream.str();
-                                // std::string sd_string = sd_stream.str();                    
-                                // std::string mean_string = mean_stream.str();                   
-                                // std::string kill_string = kill_stream.str();                    
-                                std::string file_name = network_name + solver_name; // + "/Selection" + selection_string + "/Sigma" + sd_string + "/Mu" + mean_string + "/Kills" + kill_string;                        
+                                // Set filename                   
+                                std::string file_name = network_name + solver_name;                       
                                 std::string str_directory_name = file_name;
                                 std::cout << str_directory_name << std::endl;
                                 auto p_file_handler = std::make_shared<OutputFileHandler>(str_directory_name, true);
@@ -1981,7 +1970,7 @@ public:
 
                                 // Set up the grid for the finite difference solver
                                 auto p_grid = RegularGrid<2>::Create();
-                                QLength test_grid_spacing = 5.0*unit::microns;
+                                QLength test_grid_spacing = 1.0*unit::microns; //grid_sizes = np.array([2, 5, 10, 20, 30, 50, 100])
                                 p_grid->SetSpacing(test_grid_spacing);
                                 c_vector<unsigned, 3> dimensions;
                                 dimensions[0] = unsigned((domain_side_length_x)/(test_grid_spacing))+2; // +2 creates 5 extra units of the oxygen domain so remember to cut it out in Python (the conversion to int means that there will either be 5 units more or less and it's just easier to cut out the extra domain)
@@ -4318,14 +4307,14 @@ public:
     }
 
     // Simulate the experimentally-acquired cancerous network and prune it based on vessel length
-    void xTestMetastaticImageSizePruning2D() 
+    void TestMetastaticImageSizePruning2D() 
     {
         // Initialise error log
         std::ostringstream error_log;
         error_log << "\n The following simulations failed to converge: \n";
 
         // Set network in filename
-        std::string network_name = "TestMetastaticNetworkTissue/";
+        std::string network_name = "TestMetastaticNetworkTissueSizePruning/";
 
         // Choose the domain dimensions (lectin monotile)
         double dimless_domain_size_x = 1214.56; 
@@ -4344,7 +4333,7 @@ public:
 
         // Create the log file for broken simulations
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissueSizePruning/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -4405,8 +4394,10 @@ public:
             // p_network->GetNode(1928)->GetFlowProperties()->SetIsOutputNode(true);
             // p_network->GetNode(1928)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
 
-            p_network->GetNode(1639)->GetFlowProperties()->SetIsInputNode(true);
-            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
+            p_network->GetNode(44)->GetFlowProperties()->SetIsInputNode(true);
+            p_network->GetNode(44)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));            
+            p_network->GetNode(2320)->GetFlowProperties()->SetIsInputNode(true);
+            p_network->GetNode(2320)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
             p_network->GetNode(1899)->GetFlowProperties()->SetIsOutputNode(true);
             p_network->GetNode(1899)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
 
@@ -4596,7 +4587,7 @@ public:
                 // If simulation doesn't converge, move on to next layout and log problem 
                 if (broken_solver == 1)
                 {
-                    broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt", std::ios_base::app);
+                    broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissueSizePruning/broken_layouts.txt", std::ios_base::app);
                     broken_layouts_file << str_directory_name << " \n"; 
                     broken_layouts_file.close();
 
@@ -4614,32 +4605,6 @@ public:
                 // Set up the cell nodes
                 std::vector<Node<2>*> nodes;
                 unsigned nodeNum=0;
-                // unsigned numStromaNodes = 0;
-
-                // // For staggered rows
-                // unsigned rownum = 1;
-                // double offset;
-                // double node_spacing = 1.0;
-                
-                // // Mark the stroma nodes
-                // for (double x=0; x<=dimless_domain_size_x; x=x+node_spacing)//x++)
-                // {
-                //     offset = 0;
-                //     // if (rownum % 2)
-                //     // {
-                //     //     offset = 0;
-                //     // }
-                //     for (double y=0+offset; y<=dimless_domain_size_y; y=y+node_spacing)//y++)
-                //     {
-                //         if (DIM == 2) 
-                //         {
-                //             nodes.push_back(new Node<DIM>(nodeNum, false, x, y));
-                //             nodeNum++;
-                //             numStromaNodes++;
-                //         }
-                //     }
-                //     rownum++;
-                // }
 
                 // Create a node to mark the domain origin
                 std::vector<unsigned> location_indices;
@@ -4660,9 +4625,6 @@ public:
                         nodes.push_back(new Node<DIM>(nodeNum, false, x_coor, y_coor));
                         nodeNum++;
                         numTumourNodes++;
-
-                        // Optionally store d for later use
-                        // d_values.push_back(diameter_calc);
                     }
                 }
                 std::cout << "nodes.size() = " << nodes.size() << std::endl;
@@ -4671,8 +4633,6 @@ public:
                 std::vector<CellPtr> cells;
                 MAKE_PTR(WildTypeCellMutationState, p_wild_state);
                 MAKE_PTR(StemCellProliferativeType, p_stem_state);
-                // MAKE_PTR(CancerCellMutationState, p_cancer_state);
-                // MAKE_PTR(QuiescentCancerCellMutationState, p_quiescent_cancer_state);
 
                 // Create the cancer and stroma labels
                 unsigned cancerLabelColour = 9;
@@ -4685,21 +4645,6 @@ public:
                 std::cout << "StemCellProliferativeType has Legacy Cell type " <<  p_stem_state->GetColour() << std::endl;
                 std::cout << "p_stroma_label has Legacy Cell type " <<  p_stroma_label->GetColour() << std::endl;
                 std::cout << "p_cancer_label has Legacy Cell type " <<  p_cancer_label->GetColour() << std::endl;
-                // std::cout << "Cancer state has Legacy Cell type " <<  p_cancer_state->GetColour() << std::endl;
-
-                // // Seed the stromal cells
-                // for (unsigned int i=0; i<1; i++)
-                // {
-                //     NoCellCycleModel* p_model = new NoCellCycleModel;
-                //     p_model->SetDimension(2);
-                //     CellPtr p_cell(new Cell(p_wild_state, p_model));
-                //     // p_cell->SetCellProliferativeType(p_stem_type);
-                //     // p_model->SetStemCellG1Duration(8.0);
-                //     // p_model->SetTransitCellG1Duration(8.0);
-                //     p_cell->AddCellProperty(p_stroma_label);
-                //     // p_cell->SetBirthTime(birth_time);
-                //     cells.push_back(p_cell);
-                // }
 
                 // Seed the tumour cells
                 for (unsigned int i=0; i<1+numTumourNodes; i++)  // iterate over the number of tumour nodes plus one to add a cell and location index for the origin
@@ -4724,28 +4669,6 @@ public:
                 mesh.ConstructNodesWithoutMesh(nodes, 1.5);                       
                 NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);                       
                 cell_population.SetAbsoluteMovementThreshold(DBL_MAX);  //Set big movement threshold
-
-                // for (std::list<CellPtr>::iterator cell_iter = this->cell_population.begin();
-                //      cell_iter != this->mCells.end();
-                //      )
-                // {
-                //     if ((*cell_iter)->IsDead())
-                //     {
-                //         // Get the location index corresponding to this cell
-                //         unsigned location_index = this->GetLocationIndexUsingCell(*cell_iter);
-
-                //         // Use this to remove the cell from the population
-                //         RemoveCellUsingLocationIndex(location_index, (*cell_iter));
-
-                //         // Erase cell and update counter
-                //         cell_iter = this->mCells.erase(cell_iter);
-                //         num_removed++;
-                //     }
-                //     else
-                //     {
-                //         ++cell_iter;
-                //     }
-                // }
 
                 ////////////////////////////////////////////////////////////////
 
@@ -4811,10 +4734,6 @@ public:
                 OffLatticeSimulation<2> simulator(cell_population);
                 simulator.AddSimulationModifier(p_microvessel_modifier);
 
-                // Add the spring forces between cells
-                // MAKE_PTR(GeneralisedLinearSpringForce<2>, p_force);
-                // simulator.AddForce(p_force);
-
                 // Add a cell killer to remove apoptotic cells
                 boost::shared_ptr<ApoptoticCellKiller<2>> p_apoptotic_cell_killer(new ApoptoticCellKiller<2>(&cell_population));
                 simulator.AddCellKiller(p_apoptotic_cell_killer);
@@ -4841,10 +4760,6 @@ public:
                 p_rt_killer->SetTimeOfRadiation(rt_times);
                 // p_rt_killer->AddTimeOfRadiation(3600.0*96.0*unit::seconds);
                 simulator.AddCellKiller(p_rt_killer);
-
-                // Add another modifier for updating cell cycle quantities.
-                // boost::shared_ptr<Owen2011TrackingModifier<2> > p_owen11_tracking_modifier(new Owen2011TrackingModifier<2>);
-                // simulator.AddSimulationModifier(p_owen11_tracking_modifier);
 
                 // Set up the simulation time and run it
                 simulator.SetOutputDirectory(str_directory_name);
@@ -4882,13 +4797,6 @@ public:
                 BaseUnits::Instance()->Destroy();
                 SimulationTime::Instance()->Destroy();
                 SimulationTime::Instance()->SetStartTime(0.0);
-
-                // // If simulation doesn't converge, move on to next layout
-                // if (broken_solver == 1)
-                // {
-                //     break;
-                // }
-
 
                 // If there is no oxygen in the network, don't prune any more vessels
                 double total_oxygen = 0.0;
@@ -4972,7 +4880,7 @@ public:
         error_log << "\n The following simulations failed to converge: \n";
 
         // Set network in filename
-        std::string network_name = "TestMetastaticNetworkTissue/";
+        std::string network_name = "TestMetastaticNetworkTissueFlowPruning/";
 
         // Choose the domain dimensions (lectin monotile)
         double dimless_domain_size_x = 1214.56; 
@@ -4991,7 +4899,7 @@ public:
 
         // Create the log file for broken simulations
         std::ofstream broken_layouts_file;
-        broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt");
+        broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissueFlowPruning/broken_layouts.txt");
         broken_layouts_file.close();        
 
         // Set up the reference length for the simulation
@@ -5001,7 +4909,7 @@ public:
         BaseUnits::Instance()->SetReferenceTimeScale(reference_time);
 
 
-        unsigned MaxKills = 1;  // number to kill
+        unsigned MaxKills = 4000;  // number to kill
 
         // Run the simulation with different solvers of interest
         for (unsigned h_solver=3; h_solver<=3; h_solver++)
@@ -5052,10 +4960,13 @@ public:
             // p_network->GetNode(1928)->GetFlowProperties()->SetIsOutputNode(true);
             // p_network->GetNode(1928)->GetFlowProperties()->SetPressure(10.0*Owen11Parameters::mpOutletPressure->GetValue("User"));
 
-            p_network->GetNode(1639)->GetFlowProperties()->SetIsInputNode(true);
-            p_network->GetNode(1639)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
+            p_network->GetNode(44)->GetFlowProperties()->SetIsInputNode(true);
+            p_network->GetNode(44)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));            
+            p_network->GetNode(2320)->GetFlowProperties()->SetIsInputNode(true);
+            p_network->GetNode(2320)->GetFlowProperties()->SetPressure(Owen11Parameters::mpInletPressure->GetValue("User"));
             p_network->GetNode(1899)->GetFlowProperties()->SetIsOutputNode(true);
             p_network->GetNode(1899)->GetFlowProperties()->SetPressure(Owen11Parameters::mpOutletPressure->GetValue("User"));
+
 
             // Remove diameter heterogeneity
             auto p_segment = p_network->GetVesselSegments()[0];
@@ -5243,7 +5154,7 @@ public:
                 // If simulation doesn't converge, move on to next layout and log problem 
                 if (broken_solver == 1)
                 {
-                    broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissue/broken_layouts.txt", std::ios_base::app);
+                    broken_layouts_file.open("/scratch/narain/testoutput/TestMetastaticNetworkTissueFlowPruning/broken_layouts.txt", std::ios_base::app);
                     broken_layouts_file << str_directory_name << " \n"; 
                     broken_layouts_file.close();
 
